@@ -23,7 +23,7 @@ Initialize a new project with deep context gathering.
 | `--auto @file.md` | Auto-extract from document, skip interactive questions |
 
 **Prerequisites:** No existing `.planning/PROJECT.md`
-**Produces:** `PROJECT.md`, `REQUIREMENTS.md`, `ROADMAP.md`, `STATE.md`, `config.json`, `research/`
+**Produces:** `PROJECT.md`, `REQUIREMENTS.md`, `ROADMAP.md`, `STATE.md`, `config.json`, `research/`, `CLAUDE.md`
 
 ```bash
 /gsd:new-project                    # Interactive mode
