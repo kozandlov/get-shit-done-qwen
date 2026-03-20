@@ -68,6 +68,7 @@ jobs:
     if: needs.detect-upstream.outputs.has_changes == 'true'
     outputs:
       transform_success: ${{ steps.transform.outputs.success }}
+      no_changes: ${{ steps.commit.outputs.no_changes }}
     steps:
       - name: Checkout fork
         uses: actions/checkout@v4
@@ -148,7 +149,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       needs.fetch-and-transform.outputs.transform_success == 'true' &&
-      steps.commit.outputs.no_changes != 'true'
+      needs.fetch-and-transform.outputs.no_changes != 'true'
     steps:
       - name: Create or Update PR
         id: cpr
