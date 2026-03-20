@@ -103,6 +103,7 @@ jobs:
           rsync -av --delete \
             --exclude='.git/' \
             --exclude='scripts/' \
+            --exclude='bin/' \
             --exclude='node_modules/' \
             --exclude='.github/workflows/' \
             /tmp/transformed/ ./

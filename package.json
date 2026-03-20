@@ -4,12 +4,16 @@
   "description": "Get Shit Done for Qwen Code CLI — система мета-промптинга и спеко-ориентированной разработки",
   "main": "scripts/transform-to-qwen.js",
   "bin": {
-    "gsd-qwen": "./scripts/transform-to-qwen.js"
+    "gsd-qwen": "./scripts/transform-to-qwen.js",
+    "gsd-qwen-install": "./bin/install.js"
   },
   "scripts": {
     "transform": "node scripts/transform-to-qwen.js",
     "test": "node scripts/run-tests.cjs || echo 'No tests configured'",
-    "validate": "node --check scripts/transform-to-qwen.js"
+    "validate": "node --check scripts/transform-to-qwen.js",
+    "install:global": "node bin/install.js --global",
+    "install:local": "node bin/install.js --local",
+    "uninstall": "node bin/install.js --uninstall"
   },
   "repository": {
     "type": "git",

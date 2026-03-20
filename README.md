@@ -8,17 +8,50 @@
 
 ## Установка для Qwen Code CLI
 
-### Глобально (все проекты)
+### Вариант 1: Глобальная установка (все проекты)
 
 ```bash
+# Клонируем репозиторий
 git clone https://github.com/YOUR_USERNAME/gsd-qwen.git ~/.qwen/get-shit-done
-ln -s ~/.qwen/get-shit-done/skills/* ~/.qwen/skills/
+
+# Запускаем установщик
+~/.qwen/get-shit-done/bin/install.js --global
+# или
+node ~/.qwen/get-shit-done/bin/install.js --global
 ```
 
-### Локально (только текущий проект)
+### Вариант 2: Локальная установка (только текущий проект)
 
 ```bash
+# Клонируем репозиторий в проект
 git clone https://github.com/YOUR_USERNAME/gsd-qwen.git .qwen/get-shit-done
+
+# Запускаем установщик
+.qwen/get-shit-done/bin/install.js --local
+# или
+node .qwen/get-shit-done/bin/install.js --local
+```
+
+### Вариант 3: Через npm scripts (после клонирования)
+
+```bash
+# В директории gsd-qwen
+npm run install:global  # Глобально
+npm run install:local   # Локально
+npm run uninstall       # Удалить
+```
+
+### Удаление
+
+```bash
+# Если устанавливали глобально
+~/.qwen/get-shit-done/bin/install.js --uninstall
+
+# Если устанавливали локально
+.qwen/get-shit-done/bin/install.js --uninstall
+
+# Или через npm script
+npm run uninstall
 ```
 
 ### Автоматическая синхронизация
