@@ -340,7 +340,7 @@ $gsd-help              # Справка по всем командам
   }
 
   // Добавляем таблицу соответствия команд
-  const commandsTable = `
+  let commandsTable = `
 ## Соответствие команд
 
 | Claude Code (оригинал) | Qwen Code CLI (адаптация) |
