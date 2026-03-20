@@ -117,31 +117,33 @@ jobs:
       - name: Commit and push
         id: commit
         run: |
+          cd $GITHUB_WORKSPACE
+          
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           # Проверяем, есть ли изменения
           if git diff --quiet; then
             echo "no_changes=true" >> $GITHUB_OUTPUT
             echo "✓ Изменений нет"
             exit 0
           fi
-          
-          git checkout -b ${{ env.TRANSFORM_BRANCH }} 2>/dev/null || git checkout ${{ env.TRANSFORM_BRANCH }}
+
+          git checkout -B ${{ env.TRANSFORM_BRANCH }}
           git add -A
-          
+
           git commit -m "feat: sync GSD ${{ needs.detect-upstream.outputs.latest_tag }} for Qwen
-          
+
           Auto-transformed from upstream:
           https://github.com/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}/releases/tag/${{ needs.detect-upstream.outputs.latest_tag }}
-          
+
           Transformations:
           - commands/gsd/*.md → skills/gsd-*/SKILL.md
           - Paths: ~/.claude/ → ~/.qwen/
           - Commands: /gsd: → \$gsd-
           - Tools: AskUserQuestion → ask_user_question
           - Subagents: Task → task"
-          
+
           git push -u origin ${{ env.TRANSFORM_BRANCH }} --force
           echo "no_changes=false" >> $GITHUB_OUTPUT
 
@@ -205,22 +207,7 @@ jobs:
     runs-on: ubuntu-latest
     if: failure()
     steps:
-      - name: Create Issue on failure
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `❌ Sync Failed: GSD ${{ needs.detect-upstream.outputs.latest_tag || 'unknown' }}`,
-              body: `
-            ## Ошибка синхронизации
-            
-            **Upstream:** ${{ needs.detect-upstream.outputs.latest_tag || 'unknown' }}
-            **Workflow:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            
-            Проверьте логи workflow для деталей.
-              `,
-              labels: ['bug', 'sync-failed']
-            });
+      - name: Log failure
+        run: |
+          echo "::error::Sync failed for upstream version ${{ needs.detect-upstream.outputs.latest_tag || 'unknown' }}"
+          echo "Check workflow logs at: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
