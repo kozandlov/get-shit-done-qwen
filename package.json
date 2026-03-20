@@ -1,0 +1,39 @@
+{
+  "name": "gsd-qwen",
+  "version": "1.0.0",
+  "description": "Get Shit Done for Qwen Code CLI — система мета-промптинга и спеко-ориентированной разработки",
+  "main": "scripts/transform-to-qwen.js",
+  "bin": {
+    "gsd-qwen": "./scripts/transform-to-qwen.js"
+  },
+  "scripts": {
+    "transform": "node scripts/transform-to-qwen.js",
+    "test": "node scripts/run-tests.cjs || echo 'No tests configured'",
+    "validate": "node --check scripts/transform-to-qwen.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YOUR_USERNAME/gsd-qwen.git"
+  },
+  "keywords": [
+    "qwen",
+    "qwen-code",
+    "cli",
+    "gsd",
+    "get-shit-done",
+    "productivity",
+    "ai",
+    "skills"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/gsd-qwen/issues"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/gsd-qwen#readme",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}

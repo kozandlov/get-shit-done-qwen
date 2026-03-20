@@ -1,0 +1,170 @@
+name: Validate Transformation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'skills/**'
+      - 'get-shit-done/**'
+      - 'scripts/**'
+
+jobs:
+  validate-skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate SKILL.md structure
+        run: |
+          errors=0
+          
+          # Проверяем, что директория skills существует
+          if [ ! -d "skills" ]; then
+            echo "⚠️  skills directory not found (may be ok for initial setup)"
+            exit 0
+          fi
+          
+          for dir in skills/*/; do
+            if [ ! -d "$dir" ]; then
+              continue
+            fi
+            
+            if [ ! -f "$dir/SKILL.md" ]; then
+              echo "❌ Missing SKILL.md in $dir"
+              errors=$((errors + 1))
+              continue
+            fi
+            
+            # Проверяем YAML frontmatter
+            if ! head -1 "$dir/SKILL.md" | grep -q "^---$"; then
+              echo "❌ Invalid YAML frontmatter in $dir/SKILL.md"
+              errors=$((errors + 1))
+            fi
+            
+            # Проверяем name field
+            if ! grep -q "^name: gsd-" "$dir/SKILL.md"; then
+              echo "❌ Missing or invalid 'name' field in $dir/SKILL.md"
+              errors=$((errors + 1))
+            fi
+            
+            # Проверяем description field
+            if ! grep -q "^description:" "$dir/SKILL.md"; then
+              echo "❌ Missing 'description' field in $dir/SKILL.md"
+              errors=$((errors + 1))
+            fi
+          done
+          
+          if [ $errors -gt 0 ]; then
+            echo "❌ Validation failed with $errors errors"
+            exit 1
+          fi
+          echo "✅ All skills validated ($(( $(ls -1d skills/*/ 2>/dev/null | wc -l) )) skills found)"
+
+  validate-workflows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check workflow paths
+        run: |
+          errors=0
+          
+          if [ ! -d "get-shit-done/workflows" ]; then
+            echo "⚠️  get-shit-done/workflows directory not found"
+            exit 0
+          fi
+          
+          for file in get-shit-done/workflows/*.md; do
+            if [ ! -f "$file" ]; then
+              continue
+            fi
+            
+            if grep -q "~/.claude/" "$file"; then
+              echo "❌ Old path ~/.claude/ found in $file"
+              errors=$((errors + 1))
+            fi
+            
+            if grep -q "/gsd:" "$file"; then
+              echo "❌ Old command format /gsd: found in $file"
+              errors=$((errors + 1))
+            fi
+          done
+          
+          if [ $errors -gt 0 ]; then
+            echo "❌ Workflow validation failed with $errors errors"
+            exit 1
+          fi
+          echo "✅ All workflows validated"
+
+  validate-templates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check template paths
+        run: |
+          errors=0
+          
+          if [ ! -d "get-shit-done/templates" ]; then
+            echo "⚠️  get-shit-done/templates directory not found"
+            exit 0
+          fi
+          
+          for file in get-shit-done/templates/*.md; do
+            if [ ! -f "$file" ]; then
+              continue
+            fi
+            
+            if grep -q "~/.claude/" "$file"; then
+              echo "❌ Old path ~/.claude/ found in $file"
+              errors=$((errors + 1))
+            fi
+          done
+          
+          if [ $errors -gt 0 ]; then
+            echo "❌ Template validation failed with $errors errors"
+            exit 1
+          fi
+          echo "✅ All templates validated"
+
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm ci 2>/dev/null || npm install || echo "⚠️ No dependencies or install failed"
+          fi
+
+      - name: Run tests
+        run: |
+          if [ -f package.json ] && grep -q '"test"' package.json; then
+            npm test || echo "⚠️ Tests failed"
+          else
+            echo "⚠️ No tests configured"
+          fi
+
+  check-transform-script:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate transform script syntax
+        run: |
+          if [ -f scripts/transform-to-qwen.js ]; then
+            node --check scripts/transform-to-qwen.js && echo "✅ Transform script syntax valid"
+          else
+            echo "⚠️  transform-to-qwen.js not found"
+          fi

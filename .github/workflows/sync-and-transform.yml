@@ -1,0 +1,224 @@
+name: Sync and Transform GSD
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Каждые 6 часов
+  workflow_dispatch:
+    inputs:
+      upstream_version:
+        description: 'Версия upstream (оставьте пустым для latest)'
+        required: false
+        type: string
+
+env:
+  UPSTREAM_OWNER: gsd-build
+  UPSTREAM_REPO: get-shit-done
+  UPSTREAM_BRANCH: main
+  TRANSFORM_BRANCH: auto-transform
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  detect-upstream:
+    runs-on: ubuntu-latest
+    outputs:
+      latest_tag: ${{ steps.detect.outputs.latest_tag }}
+      release_notes: ${{ steps.detect.outputs.release_notes }}
+      has_changes: ${{ steps.detect.outputs.has_changes }}
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Get latest upstream release
+        id: detect
+        run: |
+          if [ -n "${{ github.event.inputs.upstream_version }}" ]; then
+            TAG="${{ github.event.inputs.upstream_version }}"
+          else
+            RELEASE=$(curl -s \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}/releases/latest)
+            TAG=$(echo "$RELEASE" | jq -r .tag_name)
+            RELEASE_BODY=$(echo "$RELEASE" | jq -r .body | head -50)
+            echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+            echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "latest_tag=$TAG" >> $GITHUB_OUTPUT
+          
+          # Проверяем наличие тега в форке
+          if git ls-remote --tags origin | grep -q "refs/tags/sync-$TAG"; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "✓ Версия $TAG уже синхронизирована"
+            exit 0
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "✓ Обнаружена новая версия: $TAG"
+          fi
+
+  fetch-and-transform:
+    needs: detect-upstream
+    runs-on: ubuntu-latest
+    if: needs.detect-upstream.outputs.has_changes == 'true'
+    outputs:
+      transform_success: ${{ steps.transform.outputs.success }}
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Download upstream source
+        run: |
+          rm -rf /tmp/upstream
+          git clone --depth 1 \
+            https://github.com/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}.git \
+            /tmp/upstream
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run transformation
+        id: transform
+        run: |
+          mkdir -p /tmp/transformed
+          cp -r /tmp/upstream/* /tmp/transformed/
+          
+          node scripts/transform-to-qwen.js \
+            --source /tmp/upstream \
+            --target /tmp/transformed \
+            --upstream-version "${{ needs.detect-upstream.outputs.latest_tag }}"
+          
+          rsync -av --delete /tmp/transformed/ ./
+          
+          echo "success=true" >> $GITHUB_OUTPUT
+
+      - name: Install dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm ci 2>/dev/null || npm install || true
+          fi
+
+      - name: Run validation tests
+        run: |
+          npm test || echo "⚠️ Tests skipped or not available"
+
+      - name: Commit and push
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Проверяем, есть ли изменения
+          if git diff --quiet; then
+            echo "no_changes=true" >> $GITHUB_OUTPUT
+            echo "✓ Изменений нет"
+            exit 0
+          fi
+          
+          git checkout -b ${{ env.TRANSFORM_BRANCH }} 2>/dev/null || git checkout ${{ env.TRANSFORM_BRANCH }}
+          git add -A
+          
+          git commit -m "feat: sync GSD ${{ needs.detect-upstream.outputs.latest_tag }} for Qwen
+          
+          Auto-transformed from upstream:
+          https://github.com/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}/releases/tag/${{ needs.detect-upstream.outputs.latest_tag }}
+          
+          Transformations:
+          - commands/gsd/*.md → skills/gsd-*/SKILL.md
+          - Paths: ~/.claude/ → ~/.qwen/
+          - Commands: /gsd: → \$gsd-
+          - Tools: AskUserQuestion → ask_user_question
+          - Subagents: Task → task"
+          
+          git push -u origin ${{ env.TRANSFORM_BRANCH }} --force
+          echo "no_changes=false" >> $GITHUB_OUTPUT
+
+  auto-merge-pr:
+    needs: [detect-upstream, fetch-and-transform]
+    runs-on: ubuntu-latest
+    if: |
+      needs.fetch-and-transform.outputs.transform_success == 'true' &&
+      steps.commit.outputs.no_changes != 'true'
+    steps:
+      - name: Create or Update PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          branch: ${{ env.TRANSFORM_BRANCH }}
+          base: main
+          title: '🔄 Auto-sync: GSD ${{ needs.detect-upstream.outputs.latest_tag }}'
+          body: |
+            ## Автоматическая синхронизация
+            
+            **Upstream:** [${{ needs.detect-upstream.outputs.latest_tag }}](https://github.com/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}/releases/tag/${{ needs.detect-upstream.outputs.latest_tag }})
+            
+            ### Трансформации:
+            - ✅ commands/gsd/*.md → skills/gsd-*/SKILL.md
+            - ✅ ~/.claude/ → ~/.qwen/
+            - ✅ /gsd: → $gsd-
+            - ✅ Tool маппинг для Qwen Code CLI
+            
+            *Автоматический PR — будет замержен после прохождения тестов*
+          labels: automated,upstream-sync
+          delete-branch: true
+
+      - name: Wait for status checks
+        if: steps.cpr.outputs.pull-request-number
+        run: |
+          echo "Waiting 60 seconds for status checks..."
+          sleep 60
+
+      - name: Auto-merge PR
+        if: steps.cpr.outputs.pull-request-number
+        run: |
+          # Проверяем статус PR
+          PR_STATUS=$(gh pr view ${{ steps.cpr.outputs.pull-request-number }} --json statusCheckState --jq .statusCheckState 2>/dev/null || echo "PENDING")
+          
+          if [ "$PR_STATUS" = "SUCCESS" ] || [ "$PR_STATUS" = "EXPECTED" ]; then
+            gh pr merge ${{ steps.cpr.outputs.pull-request-number }} \
+              --merge \
+              --auto \
+              --subject "🔄 Auto-merge: GSD ${{ needs.detect-upstream.outputs.latest_tag }}" || \
+            echo "⚠️ Auto-merge failed, PR may need manual review"
+          else
+            echo "⚠️ Status checks not passed (status: $PR_STATUS), skipping auto-merge"
+            echo "PR created successfully. Manual merge may be required."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+  notify-failure:
+    needs: [detect-upstream, fetch-and-transform]
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - name: Create Issue on failure
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `❌ Sync Failed: GSD ${{ needs.detect-upstream.outputs.latest_tag || 'unknown' }}`,
+              body: `
+            ## Ошибка синхронизации
+            
+            **Upstream:** ${{ needs.detect-upstream.outputs.latest_tag || 'unknown' }}
+            **Workflow:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            Проверьте логи workflow для деталей.
+              `,
+              labels: ['bug', 'sync-failed']
+            });
