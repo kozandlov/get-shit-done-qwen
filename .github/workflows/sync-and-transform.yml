@@ -100,7 +100,12 @@ jobs:
             --target /tmp/transformed \
             --upstream-version "${{ needs.detect-upstream.outputs.latest_tag }}"
 
-          rsync -av --delete --exclude='.git/' /tmp/transformed/ ./
+          rsync -av --delete \
+            --exclude='.git/' \
+            --exclude='scripts/' \
+            --exclude='node_modules/' \
+            --exclude='.github/workflows/' \
+            /tmp/transformed/ ./
 
           echo "success=true" >> $GITHUB_OUTPUT
 
@@ -154,6 +159,12 @@ jobs:
       needs.fetch-and-transform.outputs.transform_success == 'true' &&
       needs.fetch-and-transform.outputs.no_changes != 'true'
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
+
       - name: Create or Update PR
         id: cpr
         uses: peter-evans/create-pull-request@v8
@@ -164,15 +175,15 @@ jobs:
           title: '🔄 Auto-sync: GSD ${{ needs.detect-upstream.outputs.latest_tag }}'
           body: |
             ## Автоматическая синхронизация
-            
+
             **Upstream:** [${{ needs.detect-upstream.outputs.latest_tag }}](https://github.com/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}/releases/tag/${{ needs.detect-upstream.outputs.latest_tag }})
-            
+
             ### Трансформации:
             - ✅ commands/gsd/*.md → skills/gsd-*/SKILL.md
             - ✅ ~/.claude/ → ~/.qwen/
             - ✅ /gsd: → $gsd-
             - ✅ Tool маппинг для Qwen Code CLI
-            
+
             *Автоматический PR — будет замержен после прохождения тестов*
           labels: automated,upstream-sync
           delete-branch: true
