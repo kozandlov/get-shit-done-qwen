@@ -94,14 +94,14 @@ jobs:
         run: |
           mkdir -p /tmp/transformed
           cp -r /tmp/upstream/* /tmp/transformed/
-          
+
           node scripts/transform-to-qwen.js \
             --source /tmp/upstream \
             --target /tmp/transformed \
             --upstream-version "${{ needs.detect-upstream.outputs.latest_tag }}"
-          
-          rsync -av --delete /tmp/transformed/ ./
-          
+
+          rsync -av --delete --exclude='.git/' /tmp/transformed/ ./
+
           echo "success=true" >> $GITHUB_OUTPUT
 
       - name: Install dependencies
