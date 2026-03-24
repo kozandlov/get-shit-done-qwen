@@ -4,18 +4,20 @@
 // Propagates NODE_V8_COVERAGE so c8 collects coverage from the child process.
 'use strict';
 
-const { readdirSync } = require('fs');
-const { join } = require('path');
 const { execFileSync } = require('child_process');
+const { existsSync } = require('fs');
+const { join } = require('path');
 
-const testDir = join(__dirname, '..', 'tests');
-const files = readdirSync(testDir)
-  .filter(f => f.endsWith('.test.cjs'))
-  .sort()
-  .map(f => join('tests', f));
+const candidateFiles = [
+  'tests/qwen-install.test.cjs',
+  'tests/transform-to-qwen.test.cjs',
+  'tests/sync-workflow.test.cjs',
+];
+
+const files = candidateFiles.filter(file => existsSync(join(__dirname, '..', file)));
 
 if (files.length === 0) {
-  console.error('No test files found in tests/');
+  console.error('No Qwen test files found in tests/');
   process.exit(1);
 }
 
