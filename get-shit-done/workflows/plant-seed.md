@@ -1,6 +1,6 @@
 <purpose>
 Capture a forward-looking idea as a structured seed file with trigger conditions.
-Seeds auto-surface during /gsd:new-milestone when trigger conditions match the
+Seeds auto-surface during $gsd-new-milestone when trigger conditions match the
 new milestone's scope.
 
 Seeds beat deferred items because they:
@@ -33,7 +33,7 @@ mkdir -p .planning/seeds
 Ask focused questions to build a complete seed:
 
 ```
-AskUserQuestion(
+ask_user_question(
   header: "Trigger",
   question: "When should this idea surface? (e.g., 'when we add user accounts', 'next major version', 'when performance becomes a priority')",
   options: []  // freeform
@@ -43,7 +43,7 @@ AskUserQuestion(
 Store as `$TRIGGER`.
 
 ```
-AskUserQuestion(
+ask_user_question(
   header: "Why",
   question: "Why does this matter? What problem does it solve or what opportunity does it create?",
   options: []
@@ -53,7 +53,7 @@ AskUserQuestion(
 Store as `$WHY`.
 
 ```
-AskUserQuestion(
+ask_user_question(
   header: "Scope",
   question: "How big is this? (rough estimate)",
   options: [
@@ -95,7 +95,7 @@ Generate slug from idea summary.
 </step>
 
 <step name="write_seed">
-Write `.planning/seeds/SEED-{PADDED}-{slug}.md`:
+write_file `.planning/seeds/SEED-{PADDED}-{slug}.md`:
 
 ```markdown
 ---
@@ -117,7 +117,7 @@ scope: {$SCOPE}
 
 **Trigger:** {$TRIGGER}
 
-This seed should be presented during `/gsd:new-milestone` when the milestone
+This seed should be presented during `$gsd-new-milestone` when the milestone
 scope matches any of these conditions:
 - {trigger condition 1}
 - {trigger condition 2}
@@ -140,7 +140,7 @@ Related code and decisions found in the current codebase:
 
 <step name="commit_seed">
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: plant seed — {$IDEA}" --files .planning/seeds/SEED-{PADDED}-{slug}.md
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs: plant seed — {$IDEA}" --files .planning/seeds/SEED-{PADDED}-{slug}.md
 ```
 </step>
 
@@ -153,7 +153,7 @@ Trigger: {$TRIGGER}
 Scope: {$SCOPE}
 File: .planning/seeds/SEED-{PADDED}-{slug}.md
 
-This seed will surface automatically when you run /gsd:new-milestone
+This seed will surface automatically when you run $gsd-new-milestone
 and the milestone scope matches the trigger condition.
 ```
 </step>

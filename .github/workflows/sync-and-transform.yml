@@ -2,7 +2,7 @@ name: Sync and Transform GSD
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Каждые 6 часов
+    - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
       upstream_version:
@@ -10,10 +10,13 @@ on:
         required: false
         type: string
 
+concurrency:
+  group: sync-and-transform
+  cancel-in-progress: false
+
 env:
   UPSTREAM_OWNER: gsd-build
   UPSTREAM_REPO: get-shit-done
-  UPSTREAM_BRANCH: main
   TRANSFORM_BRANCH: auto-transform
 
 permissions:
@@ -27,6 +30,7 @@ jobs:
     outputs:
       latest_tag: ${{ steps.detect.outputs.latest_tag }}
       release_notes: ${{ steps.detect.outputs.release_notes }}
+      release_url: ${{ steps.detect.outputs.release_url }}
       has_changes: ${{ steps.detect.outputs.has_changes }}
     steps:
       - name: Checkout fork
@@ -37,31 +41,56 @@ jobs:
 
       - name: Get latest upstream release
         id: detect
+        shell: bash
         run: |
+          set -euo pipefail
+
+          MARKER_FILE=".github/upstream-sync.json"
+          LAST_SYNCED_TAG=""
+          if [ -f "$MARKER_FILE" ]; then
+            LAST_SYNCED_TAG="$(jq -r '.upstream_tag // empty' "$MARKER_FILE" 2>/dev/null || true)"
+          fi
+
           if [ -n "${{ github.event.inputs.upstream_version }}" ]; then
             TAG="${{ github.event.inputs.upstream_version }}"
-          else
-            RELEASE=$(curl -s \
+            RELEASE_URL="https://github.com/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}/releases/tag/$TAG"
+            RELEASE_JSON="$(curl -fsSL \
               -H "Accept: application/vnd.github.v3+json" \
-              https://api.github.com/repos/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}/releases/latest)
-            TAG=$(echo "$RELEASE" | jq -r .tag_name)
-            RELEASE_BODY=$(echo "$RELEASE" | jq -r .body | head -50)
-            echo "release_notes<<EOF" >> $GITHUB_OUTPUT
-            echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+              "https://api.github.com/repos/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}/releases/tags/$TAG" || true)"
+          else
+            RELEASE_JSON="$(curl -fsSL \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}/releases/latest")"
+            TAG="$(echo "$RELEASE_JSON" | jq -r '.tag_name // empty')"
+            RELEASE_URL="$(echo "$RELEASE_JSON" | jq -r '.html_url // empty')"
           fi
-          
-          echo "latest_tag=$TAG" >> $GITHUB_OUTPUT
-          
-          # Проверяем наличие тега в форке
-          if git ls-remote --tags origin | grep -q "refs/tags/sync-$TAG"; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
+
+          if [ -z "${TAG:-}" ] || [ "$TAG" = "null" ]; then
+            echo "::error::Unable to determine latest upstream release"
+            exit 1
+          fi
+
+          RELEASE_NOTES=""
+          if [ -n "$RELEASE_JSON" ]; then
+            RELEASE_NOTES="$(echo "$RELEASE_JSON" | jq -r '.body // empty' | head -50)"
+          fi
+
+          echo "latest_tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "release_url=$RELEASE_URL" >> "$GITHUB_OUTPUT"
+          {
+            echo "release_notes<<EOF"
+            printf '%s\n' "$RELEASE_NOTES"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          if [ "$TAG" = "$LAST_SYNCED_TAG" ]; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
             echo "✓ Версия $TAG уже синхронизирована"
             exit 0
-          else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "✓ Обнаружена новая версия: $TAG"
           fi
+
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          echo "✓ Обнаружена новая версия: $TAG"
 
   fetch-and-transform:
     needs: detect-upstream
@@ -70,6 +99,7 @@ jobs:
     outputs:
       transform_success: ${{ steps.transform.outputs.success }}
       no_changes: ${{ steps.commit.outputs.no_changes }}
+      pr_number: ${{ steps.pr.outputs.pull_request_number }}
     steps:
       - name: Checkout fork
         uses: actions/checkout@v4
@@ -78,11 +108,14 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}
 
       - name: Download upstream source
+        shell: bash
         run: |
-          rm -rf /tmp/upstream
-          git clone --depth 1 \
-            https://github.com/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}.git \
+          set -euo pipefail
+          rm -rf /tmp/upstream /tmp/transformed
+          git clone --depth 1 --branch "${{ needs.detect-upstream.outputs.latest_tag }}" --single-branch \
+            "https://github.com/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}.git" \
             /tmp/upstream
+          rsync -a --delete /tmp/upstream/ /tmp/transformed/
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -91,128 +124,193 @@ jobs:
 
       - name: Run transformation
         id: transform
+        shell: bash
         run: |
-          mkdir -p /tmp/transformed
-          cp -r /tmp/upstream/* /tmp/transformed/
+          set -euo pipefail
 
           node scripts/transform-to-qwen.js \
             --source /tmp/upstream \
             --target /tmp/transformed \
             --upstream-version "${{ needs.detect-upstream.outputs.latest_tag }}"
 
-          rsync -av --delete \
-            --exclude='.git/' \
-            --exclude='scripts/' \
-            --exclude='bin/' \
-            --exclude='node_modules/' \
-            --exclude='.github/workflows/' \
-            /tmp/transformed/ ./
+          sync_path() {
+            local item="$1"
+            local src="/tmp/transformed/$item"
+            local dst="$GITHUB_WORKSPACE/$item"
 
-          echo "success=true" >> $GITHUB_OUTPUT
+            if [ -d "$src" ]; then
+              mkdir -p "$dst"
+              rsync -a --delete "$src"/ "$dst"/
+            elif [ -f "$src" ]; then
+              mkdir -p "$(dirname "$dst")"
+              cp "$src" "$dst"
+            fi
+          }
+
+          for item in \
+            agents \
+            assets \
+            bin \
+            commands \
+            docs/AGENTS.md \
+            docs/ARCHITECTURE.md \
+            docs/CLI-TOOLS.md \
+            docs/COMMANDS.md \
+            docs/CONFIGURATION.md \
+            docs/FEATURES.md \
+            docs/README.md \
+            docs/USER-GUIDE.md \
+            docs/context-monitor.md \
+            docs/zh-CN \
+            get-shit-done \
+            hooks \
+            skills \
+            README.md \
+            README.zh-CN.md \
+            CHANGELOG.md \
+            LICENSE \
+            SECURITY.md \
+            package.json \
+            package-lock.json \
+            .gitignore; do
+            sync_path "$item"
+          done
+
+          mkdir -p .github
+          cat > .github/upstream-sync.json <<EOF
+          {
+            "upstream_tag": "${{ needs.detect-upstream.outputs.latest_tag }}",
+            "release_url": "${{ needs.detect-upstream.outputs.release_url }}",
+            "source_repo": "${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}",
+            "synced_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+
+          echo "success=true" >> "$GITHUB_OUTPUT"
 
       - name: Install dependencies
+        shell: bash
         run: |
+          set -euo pipefail
           if [ -f package.json ]; then
             npm ci 2>/dev/null || npm install || true
           fi
 
       - name: Run validation tests
+        shell: bash
         run: |
+          set -euo pipefail
           npm test || echo "⚠️ Tests skipped or not available"
 
       - name: Commit and push
         id: commit
+        shell: bash
         run: |
-          cd $GITHUB_WORKSPACE
-          
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Проверяем, есть ли изменения
           if git diff --quiet; then
-            echo "no_changes=true" >> $GITHUB_OUTPUT
+            echo "no_changes=true" >> "$GITHUB_OUTPUT"
             echo "✓ Изменений нет"
             exit 0
           fi
 
-          git checkout -B ${{ env.TRANSFORM_BRANCH }}
+          git checkout -B "${{ env.TRANSFORM_BRANCH }}"
           git add -A
 
           git commit -m "feat: sync GSD ${{ needs.detect-upstream.outputs.latest_tag }} for Qwen
 
           Auto-transformed from upstream:
-          https://github.com/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}/releases/tag/${{ needs.detect-upstream.outputs.latest_tag }}
+          ${{ needs.detect-upstream.outputs.release_url }}
 
           Transformations:
-          - commands/gsd/*.md → skills/gsd-*/SKILL.md
-          - Paths: ~/.claude/ → ~/.qwen/
-          - Commands: /gsd: → \$gsd-
-          - Tools: AskUserQuestion → ask_user_question
-          - Subagents: Task → task"
+          - commands/gsd/*.md -> commands/gsd/*.md + skills/gsd-*/SKILL.md
+          - docs/, get-shit-done/, hooks/, assets/, bin/ and readmes are transformed to Qwen format
+          - Paths: ~/.claude/ -> ~/.qwen/
+          - Commands: /gsd: -> \$gsd-
+          - Tools: Claude Code tool names -> Qwen Code CLI tool names"
 
-          git push -u origin ${{ env.TRANSFORM_BRANCH }} --force
-          echo "no_changes=false" >> $GITHUB_OUTPUT
+          git push -u origin "${{ env.TRANSFORM_BRANCH }}" --force
+          echo "no_changes=false" >> "$GITHUB_OUTPUT"
 
-  auto-merge-pr:
-    needs: [detect-upstream, fetch-and-transform]
-    runs-on: ubuntu-latest
-    if: |
-      needs.fetch-and-transform.outputs.transform_success == 'true' &&
-      needs.fetch-and-transform.outputs.no_changes != 'true'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PAT_TOKEN }}
-          fetch-depth: 0
+      - name: Create or update PR
+        id: pr
+        if: steps.commit.outputs.no_changes != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
 
-      - name: Create or Update PR
-        id: cpr
-        uses: peter-evans/create-pull-request@v8
-        with:
-          token: ${{ secrets.PAT_TOKEN }}
-          branch: ${{ env.TRANSFORM_BRANCH }}
-          base: main
-          title: '🔄 Auto-sync: GSD ${{ needs.detect-upstream.outputs.latest_tag }}'
-          body: |
-            ## Автоматическая синхронизация
+          PR_NUMBER="$(gh pr list \
+            --head "${{ env.TRANSFORM_BRANCH }}" \
+            --state open \
+            --json number \
+            --jq '.[0].number' 2>/dev/null || true)"
 
-            **Upstream:** [${{ needs.detect-upstream.outputs.latest_tag }}](https://github.com/${{ env.UPSTREAM_OWNER }}/${{ env.UPSTREAM_REPO }}/releases/tag/${{ needs.detect-upstream.outputs.latest_tag }})
+          PR_BODY="$(mktemp)"
+          cat > "$PR_BODY" <<EOF
+          ## Автоматическая синхронизация
 
-            ### Трансформации:
-            - ✅ commands/gsd/*.md → skills/gsd-*/SKILL.md
-            - ✅ ~/.claude/ → ~/.qwen/
-            - ✅ /gsd: → $gsd-
-            - ✅ Tool маппинг для Qwen Code CLI
+          **Upstream:** [${{ needs.detect-upstream.outputs.latest_tag }}](${{ needs.detect-upstream.outputs.release_url }})
 
-            *Автоматический PR — будет замержен после прохождения тестов*
-          labels: automated,upstream-sync
-          delete-branch: true
+          ### Трансформации
+          - ✅ commands/gsd/*.md -> commands/gsd/*.md + skills/gsd-*/SKILL.md
+          - ✅ docs/, get-shit-done/, hooks/, assets/, bin/ and readmes are converted to Qwen format
+          - ✅ ~/.claude/ -> ~/.qwen/
+          - ✅ /gsd: -> \$gsd-
+          - ✅ Tool mapping for Qwen Code CLI
+          EOF
+
+          if [ -z "$PR_NUMBER" ]; then
+            PR_URL="$(gh pr create \
+              --base main \
+              --head "${{ env.TRANSFORM_BRANCH }}" \
+              --title "🔄 Auto-sync: GSD ${{ needs.detect-upstream.outputs.latest_tag }}" \
+              --body-file "$PR_BODY" \
+              --label automated \
+              --label upstream-sync)"
+            PR_NUMBER="$(gh pr view "$PR_URL" --json number --jq .number)"
+          else
+            gh pr edit "$PR_NUMBER" \
+              --title "🔄 Auto-sync: GSD ${{ needs.detect-upstream.outputs.latest_tag }}" \
+              --body-file "$PR_BODY" \
+              --add-label automated \
+              --add-label upstream-sync
+          fi
+
+          echo "pull_request_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
       - name: Wait for status checks
-        if: steps.cpr.outputs.pull-request-number
+        if: steps.pr.outputs.pull_request_number
         run: |
           echo "Waiting 60 seconds for status checks..."
           sleep 60
 
       - name: Auto-merge PR
-        if: steps.cpr.outputs.pull-request-number
+        if: steps.pr.outputs.pull_request_number
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        shell: bash
         run: |
-          # Проверяем статус PR
-          PR_STATUS=$(gh pr view ${{ steps.cpr.outputs.pull-request-number }} --json statusCheckState --jq .statusCheckState 2>/dev/null || echo "PENDING")
-          
+          set -euo pipefail
+
+          PR_NUMBER="${{ steps.pr.outputs.pull_request_number }}"
+          PR_STATUS="$(gh pr view "$PR_NUMBER" --json statusCheckState --jq .statusCheckState 2>/dev/null || echo "PENDING")"
+
           if [ "$PR_STATUS" = "SUCCESS" ] || [ "$PR_STATUS" = "EXPECTED" ]; then
-            gh pr merge ${{ steps.cpr.outputs.pull-request-number }} \
+            gh pr merge "$PR_NUMBER" \
               --merge \
               --auto \
               --subject "🔄 Auto-merge: GSD ${{ needs.detect-upstream.outputs.latest_tag }}" || \
-            echo "⚠️ Auto-merge failed, PR may need manual review"
+              echo "⚠️ Auto-merge failed, PR may need manual review"
           else
             echo "⚠️ Status checks not passed (status: $PR_STATUS), skipping auto-merge"
             echo "PR created successfully. Manual merge may be required."
           fi
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
   notify-failure:
     needs: [detect-upstream, fetch-and-transform]

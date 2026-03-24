@@ -1,11 +1,11 @@
 ---
-name: gsd:settings
+name: gsd-settings
 description: Configure GSD workflow toggles and model profile
 allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - AskUserQuestion
+  - read_file
+  - write_file
+  - run_shell_command
+  - ask_user_question
 ---
 
 <objective>
@@ -20,11 +20,11 @@ Routes to the settings workflow which handles:
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/settings.md
+@~/.qwen/get-shit-done/workflows/settings.md
 </execution_context>
 
 <process>
-**Follow the settings workflow** from `@~/.claude/get-shit-done/workflows/settings.md`.
+**Follow the settings workflow** from `@~/.qwen/get-shit-done/workflows/settings.md`.
 
 The workflow handles all logic including:
 1. Config file creation with defaults if missing
@@ -34,3 +34,22 @@ The workflow handles all logic including:
 5. File writing
 6. Confirmation display
 </process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-settings ~/.qwen/skills/gsd-settings
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-settings .qwen/skills/gsd-settings
+```
+
+**Usage:**
+```bash
+$gsd-settings
+```

@@ -1,7 +1,7 @@
 ---
 name: gsd-user-profiler
 description: Analyzes extracted session messages across 8 behavioral dimensions to produce a scored developer profile with confidence levels and evidence. Spawned by profile orchestration workflows.
-tools: Read
+tools: read_file
 color: magenta
 ---
 
@@ -40,7 +40,7 @@ Key characteristics of the input:
 <reference>
 @get-shit-done/references/user-profiling.md
 
-This is the detection heuristics rubric. Read it in full before analyzing any messages. It defines:
+This is the detection heuristics rubric. read_file it in full before analyzing any messages. It defines:
 - The 8 dimensions and their rating spectrums
 - Signal patterns to look for in messages
 - Detection heuristics for classifying ratings
@@ -52,7 +52,7 @@ This is the detection heuristics rubric. Read it in full before analyzing any me
 <process>
 
 <step name="load_rubric">
-Read the user-profiling reference document at `get-shit-done/references/user-profiling.md` to load:
+read_file the user-profiling reference document at `get-shit-done/references/user-profiling.md` to load:
 - All 8 dimension definitions with rating spectrums
 - Signal patterns and detection heuristics per dimension
 - Confidence scoring thresholds (HIGH: 10+ signals across 2+ projects, MEDIUM: 5-9, LOW: <5, UNSCORED: 0)
@@ -63,7 +63,7 @@ Read the user-profiling reference document at `get-shit-done/references/user-pro
 </step>
 
 <step name="read_messages">
-Read all provided session messages from the input JSONL content.
+read_file all provided session messages from the input JSONL content.
 
 While reading, build a mental index:
 - Group messages by project for cross-project consistency assessment
@@ -96,9 +96,9 @@ For each of the 8 dimensions defined in the reference document:
    - LOW: <5 signals OR mixed/contradictory signals
    - UNSCORED: 0 relevant signals detected
 
-6. **Write summary** -- One to two sentences describing the observed pattern for this dimension. Include context-dependent notes if applicable.
+6. **write_file summary** -- One to two sentences describing the observed pattern for this dimension. Include context-dependent notes if applicable.
 
-7. **Write claude_instruction** -- An imperative directive for Claude's consumption. This tells Claude how to behave based on the profile finding:
+7. **write_file claude_instruction** -- An imperative directive for Claude's consumption. This tells Claude how to behave based on the profile finding:
    - MUST be imperative: "Provide concise explanations with code" not "You tend to prefer brief explanations"
    - MUST be actionable: Claude should be able to follow this instruction directly
    - For LOW confidence dimensions: include a hedging instruction: "Try X -- ask if this matches their preference"

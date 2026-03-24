@@ -113,9 +113,9 @@ const PROFILING_QUESTIONS = [
     context: 'Think about encountering something new -- an unfamiliar library, a codebase you inherited, a concept you hadn\'t used before.',
     question: 'When you encounter something new in your codebase, how do you prefer to learn about it?',
     options: [
-      { label: 'Read the code directly -- I figure things out by reading and experimenting', value: 'a', rating: 'self-directed' },
+      { label: 'read_file the code directly -- I figure things out by reading and experimenting', value: 'a', rating: 'self-directed' },
       { label: 'Ask Claude to explain the relevant parts to me', value: 'b', rating: 'guided' },
-      { label: 'Read official docs and tutorials first, then try things', value: 'c', rating: 'documentation-first' },
+      { label: 'read_file official docs and tutorials first, then try things', value: 'c', rating: 'documentation-first' },
       { label: 'See a working example, then modify it to understand how it works', value: 'd', rating: 'example-driven' },
     ],
   },
@@ -173,19 +173,19 @@ const CLAUDE_INSTRUCTIONS = {
 };
 
 const CLAUDE_MD_FALLBACKS = {
-  project: 'Project not yet initialized. Run /gsd:new-project to set up.',
+  project: 'Project not yet initialized. Run $gsd-new-project to set up.',
   stack: 'Technology stack not yet documented. Will populate after codebase mapping or first phase.',
   conventions: 'Conventions not yet established. Will populate as patterns emerge during development.',
   architecture: 'Architecture not yet mapped. Follow existing patterns found in the codebase.',
 };
 
 const CLAUDE_MD_WORKFLOW_ENFORCEMENT = [
-  'Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.',
+  'Before using edit, write_file, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.',
   '',
   'Use these entry points:',
-  '- `/gsd:quick` for small fixes, doc updates, and ad-hoc tasks',
-  '- `/gsd:debug` for investigation and bug fixing',
-  '- `/gsd:execute-phase` for planned phase work',
+  '- `$gsd-quick` for small fixes, doc updates, and ad-hoc tasks',
+  '- `$gsd-debug` for investigation and bug fixing',
+  '- `$gsd-execute-phase` for planned phase work',
   '',
   'Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.',
 ].join('\n');
@@ -194,7 +194,7 @@ const CLAUDE_MD_PROFILE_PLACEHOLDER = [
   '<!-- GSD:profile-start -->',
   '## Developer Profile',
   '',
-  '> Profile not yet configured. Run `/gsd:profile-user` to generate your developer profile.',
+  '> Profile not yet configured. Run `$gsd-profile-user` to generate your developer profile.',
   '> This section is managed by `generate-claude-profile` -- do not edit manually.',
   '<!-- GSD:profile-end -->',
 ].join('\n');
@@ -471,10 +471,10 @@ function cmdWriteProfile(cwd, options, raw) {
     if (conf === 'HIGH' || conf === 'MEDIUM' || conf === 'LOW') dimensionsScored++;
     if (conf === 'HIGH') {
       highCount++;
-      if (dim.claude_instruction) summaryLines.push(`- **${dimensionLabels[dimKey] || dimKey}:** ${dim.claude_instruction} (HIGH)`);
+      if (dim.qwen_instruction) summaryLines.push(`- **${dimensionLabels[dimKey] || dimKey}:** ${dim.qwen_instruction} (HIGH)`);
     } else if (conf === 'MEDIUM') {
       mediumCount++;
-      if (dim.claude_instruction) summaryLines.push(`- **${dimensionLabels[dimKey] || dimKey}:** ${dim.claude_instruction} (MEDIUM)`);
+      if (dim.qwen_instruction) summaryLines.push(`- **${dimensionLabels[dimKey] || dimKey}:** ${dim.qwen_instruction} (MEDIUM)`);
     } else if (conf === 'LOW') {
       lowCount++;
     }
@@ -502,7 +502,7 @@ function cmdWriteProfile(cwd, options, raw) {
     const dim = analysis.dimensions[dimKey] || {};
     const rating = dim.rating || 'UNSCORED';
     const confidence = dim.confidence || 'UNSCORED';
-    const instruction = dim.claude_instruction || 'No strong preference detected. Ask the developer when this dimension is relevant.';
+    const instruction = dim.qwen_instruction || 'No strong preference detected. Ask the developer when this dimension is relevant.';
     const summary = dim.summary || '';
 
     let evidenceBlock = '';
@@ -521,14 +521,14 @@ function cmdWriteProfile(cwd, options, raw) {
 
     template = template.replace(new RegExp(`\\{\\{${dimKey}\\.rating\\}\\}`, 'g'), rating);
     template = template.replace(new RegExp(`\\{\\{${dimKey}\\.confidence\\}\\}`, 'g'), confidence);
-    template = template.replace(new RegExp(`\\{\\{${dimKey}\\.claude_instruction\\}\\}`, 'g'), instruction);
+    template = template.replace(new RegExp(`\\{\\{${dimKey}\\.qwen_instruction\\}\\}`, 'g'), instruction);
     template = template.replace(new RegExp(`\\{\\{${dimKey}\\.summary\\}\\}`, 'g'), summary);
     template = template.replace(new RegExp(`\\{\\{${dimKey}\\.evidence\\}\\}`, 'g'), evidenceBlock);
   }
 
   let outputPath = options.output;
   if (!outputPath) {
-    outputPath = path.join(os.homedir(), '.claude', 'get-shit-done', 'USER-PROFILE.md');
+    outputPath = path.join(os.homedir(), '.qwen', 'get-shit-done', 'USER-PROFILE.md');
   } else if (!path.isAbsolute(outputPath)) {
     outputPath = path.join(cwd, outputPath);
   }
@@ -651,7 +651,7 @@ function cmdGenerateDevPreferences(cwd, options, raw) {
     if (!dim) continue;
     const label = devPrefLabels[dimKey] || dimKey;
     const confidence = dim.confidence || 'UNSCORED';
-    let instruction = dim.claude_instruction;
+    let instruction = dim.qwen_instruction;
     if (!instruction) {
       const lookup = CLAUDE_INSTRUCTIONS[dimKey];
       if (lookup && dim.rating && lookup[dim.rating]) {
@@ -671,7 +671,7 @@ function cmdGenerateDevPreferences(cwd, options, raw) {
 
   let stackBlock;
   if (analysis.data_source === 'questionnaire') {
-    stackBlock = 'Stack preferences not available (questionnaire-only profile). Run `/gsd:profile-user --refresh` with session data to populate.';
+    stackBlock = 'Stack preferences not available (questionnaire-only profile). Run `$gsd-profile-user --refresh` with session data to populate.';
   } else if (options.stack) {
     stackBlock = options.stack;
   } else {
@@ -681,7 +681,7 @@ function cmdGenerateDevPreferences(cwd, options, raw) {
 
   let outputPath = options.output;
   if (!outputPath) {
-    outputPath = path.join(os.homedir(), '.claude', 'commands', 'gsd', 'dev-preferences.md');
+    outputPath = path.join(os.homedir(), '.qwen', 'commands', 'gsd', 'dev-preferences.md');
   } else if (!path.isAbsolute(outputPath)) {
     outputPath = path.join(cwd, outputPath);
   }
@@ -691,7 +691,7 @@ function cmdGenerateDevPreferences(cwd, options, raw) {
 
   const result = {
     command_path: outputPath,
-    command_name: '/gsd:dev-preferences',
+    command_name: '$gsd-dev-preferences',
     dimensions_included: dimensionsIncluded,
     source: analysis.data_source || 'session_analysis',
   };
@@ -740,7 +740,7 @@ function cmdGenerateClaudeProfile(cwd, options, raw) {
     const rating = dim.rating || 'UNSCORED';
     const confidence = dim.confidence || 'UNSCORED';
     tableRows.push(`| ${label} | ${rating} | ${confidence} |`);
-    let instruction = dim.claude_instruction;
+    let instruction = dim.qwen_instruction;
     if (!instruction) {
       const lookup = CLAUDE_INSTRUCTIONS[dimKey];
       if (lookup && dim.rating && lookup[dim.rating]) {
@@ -757,7 +757,7 @@ function cmdGenerateClaudeProfile(cwd, options, raw) {
     '<!-- GSD:profile-start -->',
     '## Developer Profile',
     '',
-    `> Generated by GSD from ${dataSource}. Run \`/gsd:profile-user --refresh\` to update.`,
+    `> Generated by GSD from ${dataSource}. Run \`$gsd-profile-user --refresh\` to update.`,
     '',
     '| Dimension | Rating | Confidence |',
     '|-----------|--------|------------|',
@@ -772,7 +772,7 @@ function cmdGenerateClaudeProfile(cwd, options, raw) {
 
   let targetPath;
   if (options.global) {
-    targetPath = path.join(os.homedir(), '.claude', 'CLAUDE.md');
+    targetPath = path.join(os.homedir(), '.qwen', 'CLAUDE.md');
   } else if (options.output) {
     targetPath = path.isAbsolute(options.output) ? options.output : path.join(cwd, options.output);
   } else {
@@ -925,7 +925,7 @@ function cmdGenerateClaudeMd(cwd, options, raw) {
   let message = `Generated ${genCount}/${totalManaged} sections.`;
   if (sectionsFallback.length > 0) message += ` Fallback: ${sectionsFallback.join(', ')}.`;
   if (sectionsSkipped.length > 0) message += ` Skipped (manually edited): ${sectionsSkipped.join(', ')}.`;
-  if (profileStatus === 'placeholder_added') message += ' Run /gsd:profile-user to unlock Developer Profile.';
+  if (profileStatus === 'placeholder_added') message += ' Run $gsd-profile-user to unlock Developer Profile.';
 
   const result = {
     claude_md_path: outputPath,

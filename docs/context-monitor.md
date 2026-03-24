@@ -19,7 +19,7 @@ The statusline shows context usage to the **user**, but the **agent** has no awa
 |-------|-----------|----------------|
 | Normal | > 35% | No warning |
 | WARNING | <= 35% | Wrap up current task, avoid starting new complex work |
-| CRITICAL | <= 25% | Stop immediately, save state (`/gsd:pause-work`) |
+| CRITICAL | <= 25% | Stop immediately, save state (`$gsd-pause-work`) |
 
 ## Debounce
 
@@ -56,22 +56,22 @@ The bridge file is a simple JSON object:
 
 ## Integration with GSD
 
-GSD's `/gsd:pause-work` command saves execution state. The WARNING message suggests using it. The CRITICAL message instructs immediate state save.
+GSD's `$gsd-pause-work` command saves execution state. The WARNING message suggests using it. The CRITICAL message instructs immediate state save.
 
 ## Setup
 
-Both hooks are automatically registered during `npx get-shit-done-cc` installation:
+Both hooks are automatically registered during `npx gsd-qwen` installation:
 
 - **Statusline** (writes bridge file): Registered as `statusLine` in settings.json
 - **Context Monitor** (reads bridge file): Registered as `PostToolUse` hook in settings.json (`AfterTool` for Gemini)
 
-Manual registration in `~/.claude/settings.json` (Claude Code):
+Manual registration in `~/.qwen/settings.json` (Claude Code):
 
 ```json
 {
   "statusLine": {
     "type": "command",
-    "command": "node ~/.claude/hooks/gsd-statusline.js"
+    "command": "node ~/.qwen/hooks/gsd-statusline.js"
   },
   "hooks": {
     "PostToolUse": [
@@ -79,7 +79,7 @@ Manual registration in `~/.claude/settings.json` (Claude Code):
         "hooks": [
           {
             "type": "command",
-            "command": "node ~/.claude/hooks/gsd-context-monitor.js"
+            "command": "node ~/.qwen/hooks/gsd-context-monitor.js"
           }
         ]
       }

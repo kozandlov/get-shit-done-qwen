@@ -38,10 +38,10 @@ Output: [What artifacts will be created]
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/execute-plan.md
-@~/.claude/get-shit-done/templates/summary.md
+@~/.qwen/get-shit-done/workflows/execute-plan.md
+@~/.qwen/get-shit-done/templates/summary.md
 [If plan contains checkpoint tasks (type="checkpoint:*"), add:]
-@~/.claude/get-shit-done/references/checkpoints.md
+@~/.qwen/get-shit-done/references/checkpoints.md
 </execution_context>
 
 <context>
@@ -61,31 +61,31 @@ Output: [What artifacts will be created]
 <tasks>
 
 <task type="auto">
-  <name>Task 1: [Action-oriented name]</name>
+  <name>task 1: [Action-oriented name]</name>
   <files>path/to/file.ext, another/file.ext</files>
   <read_first>path/to/reference.ext, path/to/source-of-truth.ext</read_first>
   <action>[Specific implementation - what to do, how to do it, what to avoid and WHY. Include CONCRETE values: exact identifiers, parameters, expected outputs, file paths, command arguments. Never say "align X with Y" without specifying the exact target state.]</action>
   <verify>[Command or check to prove it worked]</verify>
   <acceptance_criteria>
-    - [Grep-verifiable condition: "file.ext contains 'exact string'"]
+    - [grep_search-verifiable condition: "file.ext contains 'exact string'"]
     - [Measurable condition: "output.ext uses 'expected-value', NOT 'wrong-value'"]
   </acceptance_criteria>
   <done>[Measurable acceptance criteria]</done>
 </task>
 
 <task type="auto">
-  <name>Task 2: [Action-oriented name]</name>
+  <name>task 2: [Action-oriented name]</name>
   <files>path/to/file.ext</files>
   <read_first>path/to/reference.ext</read_first>
   <action>[Specific implementation with concrete values]</action>
   <verify>[Command or check]</verify>
   <acceptance_criteria>
-    - [Grep-verifiable condition]
+    - [grep_search-verifiable condition]
   </acceptance_criteria>
   <done>[Acceptance criteria]</done>
 </task>
 
-<!-- For checkpoint task examples and patterns, see @~/.claude/get-shit-done/references/checkpoints.md -->
+<!-- For checkpoint task examples and patterns, see @~/.qwen/get-shit-done/references/checkpoints.md -->
 
 <task type="checkpoint:decision" gate="blocking">
   <decision>[What needs deciding]</decision>
@@ -142,7 +142,7 @@ After completion, create `.planning/phases/XX-name/{phase}-{plan}-SUMMARY.md`
 | `user_setup` | No | Array of human-required setup items (external services) |
 | `must_haves` | Yes | Goal-backward verification criteria (see below) |
 
-**Wave is pre-computed:** Wave numbers are assigned during `/gsd:plan-phase`. Execute-phase reads `wave` directly from frontmatter and groups plans by wave number. No runtime dependency analysis needed.
+**Wave is pre-computed:** Wave numbers are assigned during `$gsd-plan-phase`. Execute-phase reads `wave` directly from frontmatter and groups plans by wave number. No runtime dependency analysis needed.
 
 **Must-haves enable verification:** The `must_haves` field carries goal-backward requirements from planning to execution. After all plans complete, execute-phase spawns a verification subagent that checks these criteria against the actual codebase.
 
@@ -278,11 +278,11 @@ TDD features get dedicated plans with `type: tdd`.
 → Yes: Create a TDD plan
 → No: Standard task in standard plan
 
-See `~/.claude/get-shit-done/references/tdd.md` for TDD plan structure.
+See `~/.qwen/get-shit-done/references/tdd.md` for TDD plan structure.
 
 ---
 
-## Task Types
+## task Types
 
 | Type | Use For | Autonomy |
 |------|---------|----------|
@@ -330,7 +330,7 @@ Output: User model, API endpoints, and UI components.
 
 <tasks>
 <task type="auto">
-  <name>Task 1: Create User model</name>
+  <name>task 1: Create User model</name>
   <files>src/features/user/model.ts</files>
   <action>Define User type with id, email, name, createdAt. Export TypeScript interface.</action>
   <verify>tsc --noEmit passes</verify>
@@ -338,7 +338,7 @@ Output: User model, API endpoints, and UI components.
 </task>
 
 <task type="auto">
-  <name>Task 2: Create User API endpoints</name>
+  <name>task 2: Create User API endpoints</name>
   <files>src/features/user/api.ts</files>
   <action>GET /users (list), GET /users/:id (single), POST /users (create). Use User type from model.</action>
   <verify>fetch tests pass for all endpoints</verify>
@@ -382,9 +382,9 @@ Output: Working dashboard component.
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/execute-plan.md
-@~/.claude/get-shit-done/templates/summary.md
-@~/.claude/get-shit-done/references/checkpoints.md
+@~/.qwen/get-shit-done/workflows/execute-plan.md
+@~/.qwen/get-shit-done/templates/summary.md
+@~/.qwen/get-shit-done/references/checkpoints.md
 </execution_context>
 
 <context>
@@ -396,7 +396,7 @@ Output: Working dashboard component.
 
 <tasks>
 <task type="auto">
-  <name>Task 1: Build Dashboard layout</name>
+  <name>task 1: Build Dashboard layout</name>
   <files>src/components/Dashboard.tsx</files>
   <action>Create responsive grid with UserList and ProductList components. Use Tailwind for styling.</action>
   <verify>npm run build succeeds</verify>
@@ -540,7 +540,7 @@ user_setup:
 
 **Result:** Execute-plan generates `{phase}-USER-SETUP.md` with checklist for the user.
 
-See `~/.claude/get-shit-done/templates/user-setup.md` for full schema and examples
+See `~/.qwen/get-shit-done/templates/user-setup.md` for full schema and examples
 
 ---
 
@@ -596,7 +596,7 @@ must_haves:
 
 **Why this matters:**
 
-Task completion ≠ Goal achievement. A task "create chat component" can complete by creating a placeholder. The `must_haves` field captures what must actually work, enabling verification to catch gaps before they compound.
+task completion ≠ Goal achievement. A task "create chat component" can complete by creating a placeholder. The `must_haves` field captures what must actually work, enabling verification to catch gaps before they compound.
 
 **Verification flow:**
 
@@ -607,4 +607,4 @@ Task completion ≠ Goal achievement. A task "create chat component" can complet
 5. Gaps found → fix plans created → execute → re-verify
 6. All must_haves pass → phase complete
 
-See `~/.claude/get-shit-done/workflows/verify-phase.md` for verification logic.
+See `~/.qwen/get-shit-done/workflows/verify-phase.md` for verification logic.

@@ -117,8 +117,8 @@ function output(result, raw, rawValue) {
     process.stdout.write(String(rawValue));
   } else {
     const json = JSON.stringify(result, null, 2);
-    // Large payloads exceed Claude Code's Bash tool buffer (~50KB).
-    // Write to tmpfile and output the path prefixed with @file: so callers can detect it.
+    // Large payloads exceed Claude Code's run_shell_command tool buffer (~50KB).
+    // write_file to tmpfile and output the path prefixed with @file: so callers can detect it.
     if (json.length > 50000) {
       const tmpPath = path.join(require('os').tmpdir(), `gsd-${Date.now()}.json`);
       fs.writeFileSync(tmpPath, json, 'utf-8');
@@ -163,7 +163,7 @@ function loadConfig(cwd) {
     brave_search: false,
     firecrawl: false,
     exa_search: false,
-    text_mode: false, // when true, use plain-text numbered lists instead of AskUserQuestion menus
+    text_mode: false, // when true, use plain-text numbered lists instead of ask_user_question menus
     sub_repos: [],
     resolve_model_ids: false, // when true, resolve aliases (opus/sonnet/haiku) to full model IDs
     context_window: 200000, // default 200k; set to 1000000 for Opus/Sonnet 4.6 1M models
@@ -857,7 +857,7 @@ function resolveModelInternal(cwd, agentType) {
   const alias = agentModels[profile] || agentModels['balanced'] || 'sonnet';
 
   // If resolve_model_ids is true, map alias to full model ID
-  // This prevents 404s when the Task tool passes aliases directly to the API
+  // This prevents 404s when the task tool passes aliases directly to the API
   if (config.resolve_model_ids) {
     return MODEL_ALIAS_MAP[alias] || alias;
   }

@@ -6,7 +6,7 @@
 
 ## Command Syntax
 
-- **Claude Code / Gemini / Copilot:** `/gsd:command-name [args]`
+- **Claude Code / Gemini / Copilot:** `$gsd-command-name [args]`
 - **OpenCode:** `/gsd-command-name [args]`
 - **Codex:** `$gsd-command-name [args]`
 
@@ -14,7 +14,7 @@
 
 ## Core Workflow Commands
 
-### `/gsd:new-project`
+### `$gsd-new-project`
 
 Initialize a new project with deep context gathering.
 
@@ -26,13 +26,13 @@ Initialize a new project with deep context gathering.
 **Produces:** `PROJECT.md`, `REQUIREMENTS.md`, `ROADMAP.md`, `STATE.md`, `config.json`, `research/`, `CLAUDE.md`
 
 ```bash
-/gsd:new-project                    # Interactive mode
-/gsd:new-project --auto @prd.md     # Auto-extract from PRD
+$gsd-new-project                    # Interactive mode
+$gsd-new-project --auto @prd.md     # Auto-extract from PRD
 ```
 
 ---
 
-### `/gsd:discuss-phase`
+### `$gsd-discuss-phase`
 
 Capture implementation decisions before planning.
 
@@ -49,14 +49,14 @@ Capture implementation decisions before planning.
 **Produces:** `{phase}-CONTEXT.md`
 
 ```bash
-/gsd:discuss-phase 1                # Interactive discussion for phase 1
-/gsd:discuss-phase 3 --auto         # Auto-select defaults for phase 3
-/gsd:discuss-phase --batch          # Batch mode for current phase
+$gsd-discuss-phase 1                # Interactive discussion for phase 1
+$gsd-discuss-phase 3 --auto         # Auto-select defaults for phase 3
+$gsd-discuss-phase --batch          # Batch mode for current phase
 ```
 
 ---
 
-### `/gsd:ui-phase`
+### `$gsd-ui-phase`
 
 Generate UI design contract for frontend phases.
 
@@ -68,12 +68,12 @@ Generate UI design contract for frontend phases.
 **Produces:** `{phase}-UI-SPEC.md`
 
 ```bash
-/gsd:ui-phase 2                     # Design contract for phase 2
+$gsd-ui-phase 2                     # Design contract for phase 2
 ```
 
 ---
 
-### `/gsd:plan-phase`
+### `$gsd-plan-phase`
 
 Research, plan, and verify a phase.
 
@@ -91,14 +91,14 @@ Research, plan, and verify a phase.
 **Produces:** `{phase}-RESEARCH.md`, `{phase}-{N}-PLAN.md`, `{phase}-VALIDATION.md`
 
 ```bash
-/gsd:plan-phase 1                   # Research + plan + verify phase 1
-/gsd:plan-phase 3 --skip-research   # Plan without research (familiar domain)
-/gsd:plan-phase --auto              # Non-interactive planning
+$gsd-plan-phase 1                   # Research + plan + verify phase 1
+$gsd-plan-phase 3 --skip-research   # Plan without research (familiar domain)
+$gsd-plan-phase --auto              # Non-interactive planning
 ```
 
 ---
 
-### `/gsd:execute-phase`
+### `$gsd-execute-phase`
 
 Execute all plans in a phase with wave-based parallelization.
 
@@ -110,12 +110,12 @@ Execute all plans in a phase with wave-based parallelization.
 **Produces:** `{phase}-{N}-SUMMARY.md`, `{phase}-VERIFICATION.md`, git commits
 
 ```bash
-/gsd:execute-phase 1                # Execute phase 1
+$gsd-execute-phase 1                # Execute phase 1
 ```
 
 ---
 
-### `/gsd:verify-work`
+### `$gsd-verify-work`
 
 User acceptance testing with auto-diagnosis.
 
@@ -127,31 +127,31 @@ User acceptance testing with auto-diagnosis.
 **Produces:** `{phase}-UAT.md`, fix plans if issues found
 
 ```bash
-/gsd:verify-work 1                  # UAT for phase 1
+$gsd-verify-work 1                  # UAT for phase 1
 ```
 
 ---
 
-### `/gsd:next`
+### `$gsd-next`
 
 Automatically advance to the next logical workflow step. Reads project state and runs the appropriate command.
 
 **Prerequisites:** `.planning/` directory exists
 **Behavior:**
-- No project → suggests `/gsd:new-project`
-- Phase needs discussion → runs `/gsd:discuss-phase`
-- Phase needs planning → runs `/gsd:plan-phase`
-- Phase needs execution → runs `/gsd:execute-phase`
-- Phase needs verification → runs `/gsd:verify-work`
-- All phases complete → suggests `/gsd:complete-milestone`
+- No project → suggests `$gsd-new-project`
+- Phase needs discussion → runs `$gsd-discuss-phase`
+- Phase needs planning → runs `$gsd-plan-phase`
+- Phase needs execution → runs `$gsd-execute-phase`
+- Phase needs verification → runs `$gsd-verify-work`
+- All phases complete → suggests `$gsd-complete-milestone`
 
 ```bash
-/gsd:next                           # Auto-detect and run next step
+$gsd-next                           # Auto-detect and run next step
 ```
 
 ---
 
-### `/gsd:session-report`
+### `$gsd-session-report`
 
 Generate a session report with work summary, outcomes, and estimated resource usage.
 
@@ -159,7 +159,7 @@ Generate a session report with work summary, outcomes, and estimated resource us
 **Produces:** `.planning/reports/SESSION_REPORT.md`
 
 ```bash
-/gsd:session-report                 # Generate post-session summary
+$gsd-session-report                 # Generate post-session summary
 ```
 
 **Report includes:**
@@ -171,7 +171,7 @@ Generate a session report with work summary, outcomes, and estimated resource us
 
 ---
 
-### `/gsd:ship`
+### `$gsd-ship`
 
 Create PR from completed phase work with auto-generated body.
 
@@ -180,12 +180,12 @@ Create PR from completed phase work with auto-generated body.
 | `N` | No | Phase number or milestone version (e.g., `4` or `v1.0`) |
 | `--draft` | No | Create as draft PR |
 
-**Prerequisites:** Phase verified (`/gsd:verify-work` passed), `gh` CLI installed and authenticated
+**Prerequisites:** Phase verified (`$gsd-verify-work` passed), `gh` CLI installed and authenticated
 **Produces:** GitHub PR with rich body from planning artifacts, STATE.md updated
 
 ```bash
-/gsd:ship 4                         # Ship phase 4
-/gsd:ship 4 --draft                 # Ship as draft PR
+$gsd-ship 4                         # Ship phase 4
+$gsd-ship 4 --draft                 # Ship as draft PR
 ```
 
 **PR body includes:**
@@ -197,7 +197,7 @@ Create PR from completed phase work with auto-generated body.
 
 ---
 
-### `/gsd:ui-review`
+### `$gsd-ui-review`
 
 Retroactive 6-pillar visual audit of implemented frontend.
 
@@ -209,13 +209,13 @@ Retroactive 6-pillar visual audit of implemented frontend.
 **Produces:** `{phase}-UI-REVIEW.md`, screenshots in `.planning/ui-reviews/`
 
 ```bash
-/gsd:ui-review                      # Audit current phase
-/gsd:ui-review 3                    # Audit phase 3
+$gsd-ui-review                      # Audit current phase
+$gsd-ui-review 3                    # Audit phase 3
 ```
 
 ---
 
-### `/gsd:audit-uat`
+### `$gsd-audit-uat`
 
 Cross-phase audit of all outstanding UAT and verification items.
 
@@ -223,12 +223,12 @@ Cross-phase audit of all outstanding UAT and verification items.
 **Produces:** Categorized audit report with human test plan
 
 ```bash
-/gsd:audit-uat
+$gsd-audit-uat
 ```
 
 ---
 
-### `/gsd:audit-milestone`
+### `$gsd-audit-milestone`
 
 Verify milestone met its definition of done.
 
@@ -236,12 +236,12 @@ Verify milestone met its definition of done.
 **Produces:** Audit report with gap analysis
 
 ```bash
-/gsd:audit-milestone
+$gsd-audit-milestone
 ```
 
 ---
 
-### `/gsd:complete-milestone`
+### `$gsd-complete-milestone`
 
 Archive milestone, tag release.
 
@@ -249,12 +249,12 @@ Archive milestone, tag release.
 **Produces:** `MILESTONES.md` entry, git tag
 
 ```bash
-/gsd:complete-milestone
+$gsd-complete-milestone
 ```
 
 ---
 
-### `/gsd:new-milestone`
+### `$gsd-new-milestone`
 
 Start next version cycle.
 
@@ -267,24 +267,24 @@ Start next version cycle.
 **Produces:** Updated `PROJECT.md`, new `REQUIREMENTS.md`, new `ROADMAP.md`
 
 ```bash
-/gsd:new-milestone                  # Interactive
-/gsd:new-milestone "v2.0 Mobile"    # Named milestone
-/gsd:new-milestone --reset-phase-numbers "v2.0 Mobile"  # Restart milestone numbering at 1
+$gsd-new-milestone                  # Interactive
+$gsd-new-milestone "v2.0 Mobile"    # Named milestone
+$gsd-new-milestone --reset-phase-numbers "v2.0 Mobile"  # Restart milestone numbering at 1
 ```
 
 ---
 
 ## Phase Management Commands
 
-### `/gsd:add-phase`
+### `$gsd-add-phase`
 
 Append new phase to roadmap.
 
 ```bash
-/gsd:add-phase                      # Interactive — describe the phase
+$gsd-add-phase                      # Interactive — describe the phase
 ```
 
-### `/gsd:insert-phase`
+### `$gsd-insert-phase`
 
 Insert urgent work between phases using decimal numbering.
 
@@ -293,10 +293,10 @@ Insert urgent work between phases using decimal numbering.
 | `N` | No | Insert after this phase number |
 
 ```bash
-/gsd:insert-phase 3                 # Insert between phase 3 and 4 → creates 3.1
+$gsd-insert-phase 3                 # Insert between phase 3 and 4 → creates 3.1
 ```
 
-### `/gsd:remove-phase`
+### `$gsd-remove-phase`
 
 Remove future phase and renumber subsequent phases.
 
@@ -305,10 +305,10 @@ Remove future phase and renumber subsequent phases.
 | `N` | No | Phase number to remove |
 
 ```bash
-/gsd:remove-phase 7                 # Remove phase 7, renumber 8→7, 9→8, etc.
+$gsd-remove-phase 7                 # Remove phase 7, renumber 8→7, 9→8, etc.
 ```
 
-### `/gsd:list-phase-assumptions`
+### `$gsd-list-phase-assumptions`
 
 Preview Claude's intended approach before planning.
 
@@ -317,30 +317,30 @@ Preview Claude's intended approach before planning.
 | `N` | No | Phase number |
 
 ```bash
-/gsd:list-phase-assumptions 2       # See assumptions for phase 2
+$gsd-list-phase-assumptions 2       # See assumptions for phase 2
 ```
 
-### `/gsd:plan-milestone-gaps`
+### `$gsd-plan-milestone-gaps`
 
 Create phases to close gaps from milestone audit.
 
 ```bash
-/gsd:plan-milestone-gaps             # Creates phases for each audit gap
+$gsd-plan-milestone-gaps             # Creates phases for each audit gap
 ```
 
-### `/gsd:research-phase`
+### `$gsd-research-phase`
 
-Deep ecosystem research only (standalone — usually use `/gsd:plan-phase` instead).
+Deep ecosystem research only (standalone — usually use `$gsd-plan-phase` instead).
 
 | Argument | Required | Description |
 |----------|----------|-------------|
 | `N` | No | Phase number |
 
 ```bash
-/gsd:research-phase 4               # Research phase 4 domain
+$gsd-research-phase 4               # Research phase 4 domain
 ```
 
-### `/gsd:validate-phase`
+### `$gsd-validate-phase`
 
 Retroactively audit and fill Nyquist validation gaps.
 
@@ -349,50 +349,50 @@ Retroactively audit and fill Nyquist validation gaps.
 | `N` | No | Phase number |
 
 ```bash
-/gsd:validate-phase 2               # Audit test coverage for phase 2
+$gsd-validate-phase 2               # Audit test coverage for phase 2
 ```
 
 ---
 
 ## Navigation Commands
 
-### `/gsd:progress`
+### `$gsd-progress`
 
 Show status and next steps.
 
 ```bash
-/gsd:progress                       # "Where am I? What's next?"
+$gsd-progress                       # "Where am I? What's next?"
 ```
 
-### `/gsd:resume-work`
+### `$gsd-resume-work`
 
 Restore full context from last session.
 
 ```bash
-/gsd:resume-work                    # After context reset or new session
+$gsd-resume-work                    # After context reset or new session
 ```
 
-### `/gsd:pause-work`
+### `$gsd-pause-work`
 
 Save context handoff when stopping mid-phase.
 
 ```bash
-/gsd:pause-work                     # Creates continue-here.md
+$gsd-pause-work                     # Creates continue-here.md
 ```
 
-### `/gsd:help`
+### `$gsd-help`
 
 Show all commands and usage guide.
 
 ```bash
-/gsd:help                           # Quick reference
+$gsd-help                           # Quick reference
 ```
 
 ---
 
 ## Utility Commands
 
-### `/gsd:quick`
+### `$gsd-quick`
 
 Execute ad-hoc task with GSD guarantees.
 
@@ -405,13 +405,13 @@ Execute ad-hoc task with GSD guarantees.
 Flags are composable.
 
 ```bash
-/gsd:quick                          # Basic quick task
-/gsd:quick --discuss --research     # Discussion + research + planning
-/gsd:quick --full                   # With plan checking and verification
-/gsd:quick --discuss --research --full  # All optional stages
+$gsd-quick                          # Basic quick task
+$gsd-quick --discuss --research     # Discussion + research + planning
+$gsd-quick --full                   # With plan checking and verification
+$gsd-quick --discuss --research --full  # All optional stages
 ```
 
-### `/gsd:autonomous`
+### `$gsd-autonomous`
 
 Run all remaining phases autonomously.
 
@@ -420,19 +420,19 @@ Run all remaining phases autonomously.
 | `--from N` | Start from a specific phase number |
 
 ```bash
-/gsd:autonomous                     # Run all remaining phases
-/gsd:autonomous --from 3            # Start from phase 3
+$gsd-autonomous                     # Run all remaining phases
+$gsd-autonomous --from 3            # Start from phase 3
 ```
 
-### `/gsd:do`
+### `$gsd-do`
 
 Route freeform text to the right GSD command.
 
 ```bash
-/gsd:do                             # Then describe what you want
+$gsd-do                             # Then describe what you want
 ```
 
-### `/gsd:note`
+### `$gsd-note`
 
 Zero-friction idea capture — append, list, or promote notes to todos.
 
@@ -447,12 +447,12 @@ Zero-friction idea capture — append, list, or promote notes to todos.
 | `--global` | Use global scope for note operations |
 
 ```bash
-/gsd:note "Consider caching strategy for API responses"
-/gsd:note list
-/gsd:note promote 3
+$gsd-note "Consider caching strategy for API responses"
+$gsd-note list
+$gsd-note promote 3
 ```
 
-### `/gsd:debug`
+### `$gsd-debug`
 
 Systematic debugging with persistent state.
 
@@ -461,10 +461,10 @@ Systematic debugging with persistent state.
 | `description` | No | Description of the bug |
 
 ```bash
-/gsd:debug "Login button not responding on mobile Safari"
+$gsd-debug "Login button not responding on mobile Safari"
 ```
 
-### `/gsd:add-todo`
+### `$gsd-add-todo`
 
 Capture idea or task for later.
 
@@ -473,18 +473,18 @@ Capture idea or task for later.
 | `description` | No | Todo description |
 
 ```bash
-/gsd:add-todo "Consider adding dark mode support"
+$gsd-add-todo "Consider adding dark mode support"
 ```
 
-### `/gsd:check-todos`
+### `$gsd-check-todos`
 
 List pending todos and select one to work on.
 
 ```bash
-/gsd:check-todos
+$gsd-check-todos
 ```
 
-### `/gsd:add-tests`
+### `$gsd-add-tests`
 
 Generate tests for a completed phase.
 
@@ -493,18 +493,18 @@ Generate tests for a completed phase.
 | `N` | No | Phase number |
 
 ```bash
-/gsd:add-tests 2                    # Generate tests for phase 2
+$gsd-add-tests 2                    # Generate tests for phase 2
 ```
 
-### `/gsd:stats`
+### `$gsd-stats`
 
 Display project statistics.
 
 ```bash
-/gsd:stats                          # Project metrics dashboard
+$gsd-stats                          # Project metrics dashboard
 ```
 
-### `/gsd:profile-user`
+### `$gsd-profile-user`
 
 Generate a developer behavioral profile from Claude Code session analysis across 8 dimensions (communication style, decision patterns, debugging approach, UX preferences, vendor choices, frustration triggers, learning style, explanation depth). Produces artifacts that personalize Claude's responses.
 
@@ -515,16 +515,16 @@ Generate a developer behavioral profile from Claude Code session analysis across
 
 **Generated artifacts:**
 - `USER-PROFILE.md` — Full behavioral profile
-- `/gsd:dev-preferences` command — Load preferences in any session
+- `$gsd-dev-preferences` command — Load preferences in any session
 - `CLAUDE.md` profile section — Auto-discovered by Claude Code
 
 ```bash
-/gsd:profile-user                   # Analyze sessions and build profile
-/gsd:profile-user --questionnaire   # Interactive questionnaire fallback
-/gsd:profile-user --refresh         # Re-generate from fresh analysis
+$gsd-profile-user                   # Analyze sessions and build profile
+$gsd-profile-user --questionnaire   # Interactive questionnaire fallback
+$gsd-profile-user --refresh         # Re-generate from fresh analysis
 ```
 
-### `/gsd:health`
+### `$gsd-health`
 
 Validate `.planning/` directory integrity.
 
@@ -533,31 +533,31 @@ Validate `.planning/` directory integrity.
 | `--repair` | Auto-fix recoverable issues |
 
 ```bash
-/gsd:health                         # Check integrity
-/gsd:health --repair                # Check and fix
+$gsd-health                         # Check integrity
+$gsd-health --repair                # Check and fix
 ```
 
-### `/gsd:cleanup`
+### `$gsd-cleanup`
 
 Archive accumulated phase directories from completed milestones.
 
 ```bash
-/gsd:cleanup
+$gsd-cleanup
 ```
 
 ---
 
 ## Configuration Commands
 
-### `/gsd:settings`
+### `$gsd-settings`
 
 Interactive configuration of workflow toggles and model profile.
 
 ```bash
-/gsd:settings                       # Interactive config
+$gsd-settings                       # Interactive config
 ```
 
-### `/gsd:set-profile`
+### `$gsd-set-profile`
 
 Quick profile switch.
 
@@ -566,15 +566,15 @@ Quick profile switch.
 | `profile` | **Yes** | `quality`, `balanced`, `budget`, or `inherit` |
 
 ```bash
-/gsd:set-profile budget             # Switch to budget profile
-/gsd:set-profile quality            # Switch to quality profile
+$gsd-set-profile budget             # Switch to budget profile
+$gsd-set-profile quality            # Switch to quality profile
 ```
 
 ---
 
 ## Brownfield Commands
 
-### `/gsd:map-codebase`
+### `$gsd-map-codebase`
 
 Analyze existing codebase with parallel mapper agents.
 
@@ -583,38 +583,38 @@ Analyze existing codebase with parallel mapper agents.
 | `area` | No | Scope mapping to a specific area |
 
 ```bash
-/gsd:map-codebase                   # Full codebase analysis
-/gsd:map-codebase auth              # Focus on auth area
+$gsd-map-codebase                   # Full codebase analysis
+$gsd-map-codebase auth              # Focus on auth area
 ```
 
 ---
 
 ## Update Commands
 
-### `/gsd:update`
+### `$gsd-update`
 
 Update GSD with changelog preview.
 
 ```bash
-/gsd:update                         # Check for updates and install
+$gsd-update                         # Check for updates and install
 ```
 
-### `/gsd:reapply-patches`
+### `$gsd-reapply-patches`
 
 Restore local modifications after a GSD update.
 
 ```bash
-/gsd:reapply-patches                # Merge back local changes
+$gsd-reapply-patches                # Merge back local changes
 ```
 
 ---
 
 ## Community Commands
 
-### `/gsd:join-discord`
+### `$gsd-join-discord`
 
 Open Discord community invite.
 
 ```bash
-/gsd:join-discord
+$gsd-join-discord
 ```

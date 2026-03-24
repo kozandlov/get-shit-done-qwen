@@ -1,26 +1,26 @@
 ---
-name: gsd:profile-user
+name: gsd-profile-user
 description: Generate developer behavioral profile and create Claude-discoverable artifacts
 argument-hint: "[--questionnaire] [--refresh]"
 allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Glob
-  - Grep
-  - AskUserQuestion
-  - Task
+  - read_file
+  - write_file
+  - run_shell_command
+  - glob
+  - grep_search
+  - ask_user_question
+  - task
 ---
 
 <objective>
-Generate a developer behavioral profile from session analysis (or questionnaire) and produce artifacts (USER-PROFILE.md, /gsd:dev-preferences, CLAUDE.md section) that personalize Claude's responses.
+Generate a developer behavioral profile from session analysis (or questionnaire) and produce artifacts (USER-PROFILE.md, $gsd-dev-preferences, CLAUDE.md section) that personalize Claude's responses.
 
 Routes to the profile-user workflow which orchestrates the full flow: consent gate, session analysis or questionnaire fallback, profile generation, result display, and artifact selection.
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/profile-user.md
-@~/.claude/get-shit-done/references/ui-brand.md
+@~/.qwen/get-shit-done/workflows/profile-user.md
+@~/.qwen/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -44,3 +44,22 @@ The workflow handles all logic including:
 9. Sequential artifact generation
 10. Summary with refresh diff (if applicable)
 </process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-profile-user ~/.qwen/skills/gsd-profile-user
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-profile-user .qwen/skills/gsd-profile-user
+```
+
+**Usage:**
+```bash
+$gsd-profile-user
+```

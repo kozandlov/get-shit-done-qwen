@@ -46,10 +46,11 @@
 
 После настройки workflow автоматически:
 
-1. Проверит upstream репозиторий `gsd-build/get-shit-done`
-2. Скачает последнюю версию
+1. Проверит последний release в `gsd-build/get-shit-done`
+2. Скачает конкретный release tag
 3. Запустит скрипт трансформации:
-   - `commands/gsd/*.md` → `skills/gsd-*/SKILL.md`
+   - `commands/gsd/*.md` → `commands/gsd/*.md` + `skills/gsd-*/SKILL.md`
+   - `get-shit-done/`, `docs/` (selected top-level files + `zh-CN`), `hooks/`, `bin/`, `assets/`, `README*.md` → Qwen-совместимый формат
    - `~/.claude/` → `~/.qwen/`
    - `/gsd:` → `$gsd-`
 4. Создаст PR с изменениями

@@ -718,7 +718,7 @@ function syncStateFrontmatter(content, cwd) {
 }
 
 /**
- * Write STATE.md with synchronized YAML frontmatter.
+ * write_file STATE.md with synchronized YAML frontmatter.
  * All STATE.md writes should use this instead of raw writeFileSync.
  * Uses a simple lockfile to prevent parallel agents from overwriting
  * each other's changes (race condition with read-modify-write cycle).
@@ -866,7 +866,7 @@ function cmdStateBeginPhase(cwd, phaseNumber, phaseName, planCount, raw) {
 }
 
 /**
- * Write a WAITING.json signal file when GSD hits a decision point.
+ * write_file a WAITING.json signal file when GSD hits a decision point.
  * External watchers (fswatch, polling, orchestrators) can detect this.
  * File is written to .planning/WAITING.json (or .gsd/WAITING.json if .gsd exists).
  * Fixes #1034.

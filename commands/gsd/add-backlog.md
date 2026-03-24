@@ -1,11 +1,11 @@
 ---
-name: gsd:add-backlog
+name: gsd-add-backlog
 description: Add an idea to the backlog parking lot (999.x numbering)
 argument-hint: <description>
 allowed-tools:
-  - Read
-  - Write
-  - Bash
+  - read_file
+  - write_file
+  - run_shell_command
 ---
 
 <objective>
@@ -16,20 +16,20 @@ the normal phase sequence and accumulate context over time.
 
 <process>
 
-1. **Read ROADMAP.md** to find existing backlog entries:
+1. **read_file ROADMAP.md** to find existing backlog entries:
    ```bash
    cat .planning/ROADMAP.md
    ```
 
 2. **Find next backlog number:**
    ```bash
-   NEXT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" phase next-decimal 999 --raw)
+   NEXT=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" phase next-decimal 999 --raw)
    ```
    If no 999.x phases exist, start at 999.1.
 
 3. **Create the phase directory:**
    ```bash
-   SLUG=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" generate-slug "$ARGUMENTS")
+   SLUG=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" generate-slug "$ARGUMENTS")
    mkdir -p ".planning/phases/${NEXT}-${SLUG}"
    touch ".planning/phases/${NEXT}-${SLUG}/.gitkeep"
    ```
@@ -46,12 +46,12 @@ the normal phase sequence and accumulate context over time.
    **Plans:** 0 plans
 
    Plans:
-   - [ ] TBD (promote with /gsd:review-backlog when ready)
+   - [ ] TBD (promote with $gsd-review-backlog when ready)
    ```
 
 5. **Commit:**
    ```bash
-   node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: add backlog item ${NEXT} — ${ARGUMENTS}" --files .planning/ROADMAP.md ".planning/phases/${NEXT}-${SLUG}/.gitkeep"
+   node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs: add backlog item ${NEXT} — ${ARGUMENTS}" --files .planning/ROADMAP.md ".planning/phases/${NEXT}-${SLUG}/.gitkeep"
    ```
 
 6. **Report:**
@@ -62,15 +62,34 @@ the normal phase sequence and accumulate context over time.
    Directory: .planning/phases/{NEXT}-{slug}/
 
    This item lives in the backlog parking lot.
-   Use /gsd:discuss-phase {NEXT} to explore it further.
-   Use /gsd:review-backlog to promote items to active milestone.
+   Use $gsd-discuss-phase {NEXT} to explore it further.
+   Use $gsd-review-backlog to promote items to active milestone.
    ```
 
 </process>
 
 <notes>
 - 999.x numbering keeps backlog items out of the active phase sequence
-- Phase directories are created immediately, so /gsd:discuss-phase and /gsd:plan-phase work on them
+- Phase directories are created immediately, so $gsd-discuss-phase and $gsd-plan-phase work on them
 - No `Depends on:` field — backlog items are unsequenced by definition
 - Sparse numbering is fine (999.1, 999.3) — always uses next-decimal
 </notes>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-add-backlog ~/.qwen/skills/gsd-add-backlog
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-add-backlog .qwen/skills/gsd-add-backlog
+```
+
+**Usage:**
+```bash
+$gsd-add-backlog
+```

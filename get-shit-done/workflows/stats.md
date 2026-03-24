@@ -3,7 +3,7 @@ Display comprehensive project statistics including phases, plans, requirements, 
 </purpose>
 
 <required_reading>
-Read all files referenced by the invoking prompt's execution_context before starting.
+read_file all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
 <process>
@@ -12,7 +12,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 Gather project statistics:
 
 ```bash
-STATS=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" stats json)
+STATS=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" stats json)
 if [[ "$STATS" == @file:* ]]; then STATS=$(cat "${STATS#@file:}"); fi
 ```
 
@@ -48,7 +48,7 @@ X/Y plans complete (Z%)
 - **Project age:** N days
 ```
 
-If no `.planning/` directory exists, inform the user to run `/gsd:new-project` first.
+If no `.planning/` directory exists, inform the user to run `$gsd-new-project` first.
 </step>
 
 </process>

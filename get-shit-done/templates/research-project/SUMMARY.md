@@ -140,7 +140,7 @@ Phases with standard patterns (skip research-phase):
 <guidelines>
 
 **Executive Summary:**
-- Write for someone who will only read this section
+- write_file for someone who will only read this section
 - Include the key recommendation and main risk
 - 2-3 paragraphs maximum
 

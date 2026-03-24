@@ -129,7 +129,7 @@ node gsd-tools.cjs roadmap update-plan-progress <N>
 
 ## Config Commands
 
-Read and write `.planning/config.json`.
+read_file and write `.planning/config.json`.
 
 ```bash
 # Initialize config.json with defaults

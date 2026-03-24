@@ -51,7 +51,7 @@ Phases:
 提交内容：
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: initialize [project-name] ([N] phases)" --files .planning/
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs: initialize [project-name] ([N] phases)" --files .planning/
 ```
 
 </format>
@@ -119,9 +119,9 @@ git commit -m "feat(07-02): implement JWT generation
 docs({phase}-{plan}): complete [plan-name] plan
 
 Tasks completed: [N]/[N]
-- [Task 1 name]
-- [Task 2 name]
-- [Task 3 name]
+- [task 1 name]
+- [task 2 name]
+- [task 3 name]
 
 SUMMARY: .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md
 ```
@@ -129,7 +129,7 @@ SUMMARY: .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md
 提交内容：
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-PLAN.md .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-PLAN.md .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md
 ```
 
 **注意：** 代码文件不包含 - 已按任务提交。
@@ -149,7 +149,7 @@ Current: [task name]
 提交内容：
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "wip: [phase-name] paused at task [X]/[Y]" --files .planning/
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "wip: [phase-name] paused at task [X]/[Y]" --files .planning/
 ```
 
 </format>

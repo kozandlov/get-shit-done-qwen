@@ -15,7 +15,7 @@
  *   state get [section]                Get STATE.md content or section
  *   state patch --field val ...        Batch update STATE.md fields
  *   state begin-phase --phase N --name S --plans C  Update STATE.md for new phase start
- *   state signal-waiting --type T --question Q --options "A|B" --phase P  Write WAITING.json signal
+ *   state signal-waiting --type T --question Q --options "A|B" --phase P  write_file WAITING.json signal
  *   state signal-resume                Remove WAITING.json signal
  *   resolve-model <agent-type>         Get model for agent based on profile
  *   find-phase <phase>                 Find phase directory by number

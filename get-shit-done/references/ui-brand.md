@@ -69,7 +69,7 @@ User action required. 62-character width.
 Progress: ████████░░ 80%
 ```
 
-**Task level:**
+**task level:**
 ```
 Tasks: 2/4 complete
 ```
@@ -115,8 +115,8 @@ Always at end of major completions.
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/gsd:alternative-1` — description
-- `/gsd:alternative-2` — description
+- `$gsd-alternative-1` — description
+- `$gsd-alternative-2` — description
 
 ───────────────────────────────────────────────────────────────
 ```

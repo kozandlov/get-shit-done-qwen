@@ -1,12 +1,12 @@
 ---
-name: gsd:check-todos
+name: gsd-check-todos
 description: List pending todos and select one to work on
 argument-hint: [area filter]
 allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - AskUserQuestion
+  - read_file
+  - write_file
+  - run_shell_command
+  - ask_user_question
 ---
 
 <objective>
@@ -21,7 +21,7 @@ Routes to the check-todos workflow which handles:
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/check-todos.md
+@~/.qwen/get-shit-done/workflows/check-todos.md
 </execution_context>
 
 <context>
@@ -31,7 +31,7 @@ Todo state and roadmap correlation are loaded in-workflow using `init todos` and
 </context>
 
 <process>
-**Follow the check-todos workflow** from `@~/.claude/get-shit-done/workflows/check-todos.md`.
+**Follow the check-todos workflow** from `@~/.qwen/get-shit-done/workflows/check-todos.md`.
 
 The workflow handles all logic including:
 1. Todo existence checking
@@ -43,3 +43,22 @@ The workflow handles all logic including:
 7. STATE.md updates
 8. Git commits
 </process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-check-todos ~/.qwen/skills/gsd-check-todos
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-check-todos .qwen/skills/gsd-check-todos
+```
+
+**Usage:**
+```bash
+$gsd-check-todos
+```

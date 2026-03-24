@@ -141,8 +141,8 @@
 **不要用于预定的手动工作：**
 - 部署（使用 CLI - 如需要则认证门控）
 - 创建 webhooks/数据库（使用 API/CLI - 如需要则认证门控）
-- 运行构建/测试（使用 Bash 工具）
-- 创建文件（使用 Write 工具）
+- 运行构建/测试（使用 run_shell_command 工具）
+- 创建文件（使用 write_file 工具）
 
 **结构：**
 ```xml
@@ -294,7 +294,7 @@
 
 ### 环境变量自动化
 
-**Env 文件：** 使用 Write/Edit 工具。绝不让用户手动创建 .env。
+**Env 文件：** 使用 write_file/edit 工具。绝不让用户手动创建 .env。
 
 **通过 CLI 的仪表板环境变量：**
 
@@ -364,7 +364,7 @@ timeout 30 bash -c 'until curl -s localhost:3000 > /dev/null 2>&1; do sleep 1; d
 |------|------------|------------|
 | 部署到 Vercel | 是 (`vercel`) | 是 |
 | 创建 Stripe webhook | 是 (API) | 是 |
-| 写入 .env 文件 | 是 (Write 工具) | 是 |
+| 写入 .env 文件 | 是 (write_file 工具) | 是 |
 | 创建 Upstash DB | 是 (`upstash`) | 是 |
 | 运行测试 | 是 (`npm test`) | 是 |
 | 启动开发服务器 | 是 (`npm run dev`) | 是 |

@@ -1,12 +1,12 @@
 ---
-name: gsd:list-phase-assumptions
+name: gsd-list-phase-assumptions
 description: Surface Claude's assumptions about a phase approach before planning
 argument-hint: "[phase]"
 allowed-tools:
-  - Read
-  - Bash
-  - Grep
-  - Glob
+  - read_file
+  - run_shell_command
+  - grep_search
+  - glob
 ---
 
 <objective>
@@ -17,7 +17,7 @@ Output: Conversational output only (no file creation) - ends with "What do you t
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/list-phase-assumptions.md
+@~/.qwen/get-shit-done/workflows/list-phase-assumptions.md
 </execution_context>
 
 <context>
@@ -44,3 +44,22 @@ Project state and roadmap are loaded in-workflow using targeted reads.
 - User prompted for feedback
 - User knows next steps (discuss context, plan phase, or correct assumptions)
   </success_criteria>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-list-phase-assumptions ~/.qwen/skills/gsd-list-phase-assumptions
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-list-phase-assumptions .qwen/skills/gsd-list-phase-assumptions
+```
+
+**Usage:**
+```bash
+$gsd-list-phase-assumptions
+```

@@ -1,14 +1,14 @@
 ---
-name: gsd:audit-milestone
+name: gsd-audit-milestone
 description: Audit milestone completion against original intent before archiving
 argument-hint: "[version]"
 allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - Bash
-  - Task
-  - Write
+  - read_file
+  - glob
+  - grep_search
+  - run_shell_command
+  - task
+  - write_file
 ---
 <objective>
 Verify milestone achieved its definition of done. Check requirements coverage, cross-phase integration, and end-to-end flows.
@@ -17,7 +17,7 @@ Verify milestone achieved its definition of done. Check requirements coverage, c
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/audit-milestone.md
+@~/.qwen/get-shit-done/workflows/audit-milestone.md
 </execution_context>
 
 <context>
@@ -26,11 +26,30 @@ Version: $ARGUMENTS (optional — defaults to current milestone)
 Core planning files are resolved in-workflow (`init milestone-op`) and loaded only as needed.
 
 **Completed Work:**
-Glob: .planning/phases/*/*-SUMMARY.md
-Glob: .planning/phases/*/*-VERIFICATION.md
+glob: .planning/phases/*/*-SUMMARY.md
+glob: .planning/phases/*/*-VERIFICATION.md
 </context>
 
 <process>
-Execute the audit-milestone workflow from @~/.claude/get-shit-done/workflows/audit-milestone.md end-to-end.
+Execute the audit-milestone workflow from @~/.qwen/get-shit-done/workflows/audit-milestone.md end-to-end.
 Preserve all workflow gates (scope determination, verification reading, integration check, requirements coverage, routing).
 </process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-audit-milestone ~/.qwen/skills/gsd-audit-milestone
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-audit-milestone .qwen/skills/gsd-audit-milestone
+```
+
+**Usage:**
+```bash
+$gsd-audit-milestone
+```

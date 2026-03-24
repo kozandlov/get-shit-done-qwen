@@ -1,12 +1,12 @@
 ---
-name: gsd:debug
+name: gsd-debug
 description: Systematic debugging with persistent state across context resets
 argument-hint: [issue description]
 allowed-tools:
-  - Read
-  - Bash
-  - Task
-  - AskUserQuestion
+  - read_file
+  - run_shell_command
+  - task
+  - ask_user_question
 ---
 
 <objective>
@@ -31,13 +31,13 @@ ls .planning/debug/*.md 2>/dev/null | grep -v resolved | head -5
 ## 0. Initialize Context
 
 ```bash
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" state load)
+INIT=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" state load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Extract `commit_docs` from init JSON. Resolve debugger model:
 ```bash
-debugger_model=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" resolve-model gsd-debugger --raw)
+debugger_model=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" resolve-model gsd-debugger --raw)
 ```
 
 ## 1. Check Active Sessions
@@ -51,7 +51,7 @@ If $ARGUMENTS provided OR user describes new issue:
 
 ## 2. Gather Symptoms (if new issue)
 
-Use AskUserQuestion for each:
+Use ask_user_question for each:
 
 1. **Expected behavior** - What should happen?
 2. **Actual behavior** - What happens instead?
@@ -91,7 +91,7 @@ Create: .planning/debug/{slug}.md
 ```
 
 ```
-Task(
+task(
   prompt=filled_prompt,
   subagent_type="gsd-debugger",
   model="{debugger_model}",
@@ -105,7 +105,7 @@ Task(
 - Display root cause and evidence summary
 - Offer options:
   - "Fix now" - spawn fix subagent
-  - "Plan fix" - suggest /gsd:plan-phase --gaps
+  - "Plan fix" - suggest $gsd-plan-phase --gaps
   - "Manual fix" - done
 
 **If `## CHECKPOINT REACHED`:**
@@ -149,7 +149,7 @@ goal: find_and_fix
 ```
 
 ```
-Task(
+task(
   prompt=continuation_prompt,
   subagent_type="gsd-debugger",
   model="{debugger_model}",
@@ -166,3 +166,22 @@ Task(
 - [ ] Checkpoints handled correctly
 - [ ] Root cause confirmed before fixing
 </success_criteria>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-debug ~/.qwen/skills/gsd-debug
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-debug .qwen/skills/gsd-debug
+```
+
+**Usage:**
+```bash
+$gsd-debug
+```

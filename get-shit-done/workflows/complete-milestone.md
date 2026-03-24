@@ -42,7 +42,7 @@ When a milestone completes:
 **Use `roadmap analyze` for comprehensive readiness check:**
 
 ```bash
-ROADMAP=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)
+ROADMAP=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)
 ```
 
 This returns all phases with plan/summary counts and disk status. Use this to verify:
@@ -82,7 +82,7 @@ Requirements: {N}/{M} v1 requirements checked off
 
 MUST present 3 options:
 1. **Proceed anyway** — mark milestone complete with known gaps
-2. **Run audit first** — `/gsd:audit-milestone` to assess gap severity
+2. **Run audit first** — `$gsd-audit-milestone` to assess gap severity
 3. **Abort** — return to development
 
 If user selects "Proceed anyway": note incomplete requirements in MILESTONES.md under `### Known Gaps` with REQ-IDs and descriptions.
@@ -156,7 +156,7 @@ Extract one-liners from SUMMARY.md files using summary-extract:
 ```bash
 # For each phase in milestone, extract one-liner
 for summary in .planning/phases/*-*/*-SUMMARY.md; do
-  node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" summary-extract "$summary" --fields one_liner | jq -r '.one_liner'
+  node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" summary-extract "$summary" --fields one_liner | jq -r '.one_liner'
 done
 ```
 
@@ -185,7 +185,7 @@ If additional details are needed (e.g., user-provided "Delivered" summary, git r
 
 Full PROJECT.md evolution review at milestone completion.
 
-Read all phase summaries:
+read_file all phase summaries:
 
 ```bash
 cat .planning/phases/*-*/*-SUMMARY.md
@@ -369,7 +369,7 @@ Update `.planning/ROADMAP.md` — group completed milestone phases:
 **Delegate archival to gsd-tools:**
 
 ```bash
-ARCHIVE=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" milestone complete "v[X.Y]" --name "[Milestone Name]")
+ARCHIVE=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" milestone complete "v[X.Y]" --name "[Milestone Name]")
 ```
 
 The CLI handles:
@@ -386,7 +386,7 @@ Verify: `✅ Milestone archived to .planning/milestones/`
 
 **Phase archival (optional):** After archival completes, ask the user:
 
-AskUserQuestion(header="Archive Phases", question="Archive phase directories to milestones/?", options: "Yes — move to milestones/v[X.Y]-phases/" | "Skip — keep phases in place")
+ask_user_question(header="Archive Phases", question="Archive phase directories to milestones/?", options: "Yes — move to milestones/v[X.Y]-phases/" | "Skip — keep phases in place")
 
 If "Yes": move phase directories to the milestone archive:
 ```bash
@@ -396,7 +396,7 @@ mv .planning/phases/{phase-dir} .planning/milestones/v[X.Y]-phases/
 ```
 Verify: `✅ Phase directories archived to .planning/milestones/v[X.Y]-phases/`
 
-If "Skip": Phase directories remain in `.planning/phases/` as raw execution history. Use `/gsd:cleanup` later to archive retroactively.
+If "Skip": Phase directories remain in `.planning/phases/` as raw execution history. Use `$gsd-cleanup` later to archive retroactively.
 
 After archival, the AI still handles:
 - Reorganizing ROADMAP.md with milestone grouping (requires judgment)
@@ -449,9 +449,9 @@ Check for existing retrospective:
 ls .planning/RETROSPECTIVE.md 2>/dev/null
 ```
 
-**If exists:** Read the file, append new milestone section before the "## Cross-Milestone Trends" section.
+**If exists:** read_file the file, append new milestone section before the "## Cross-Milestone Trends" section.
 
-**If doesn't exist:** Create from template at `~/.claude/get-shit-done/templates/retrospective.md`.
+**If doesn't exist:** Create from template at `~/.qwen/get-shit-done/templates/retrospective.md`.
 
 **Gather retrospective data:**
 
@@ -461,7 +461,7 @@ ls .planning/RETROSPECTIVE.md 2>/dev/null
 4. From git log: Count commits, calculate timeline
 5. From the milestone work: Reflect on what worked and what didn't
 
-**Write the milestone section:**
+**write_file the milestone section:**
 
 ```markdown
 ## Milestone: v{version} — {name}
@@ -496,7 +496,7 @@ If the "## Cross-Milestone Trends" section exists, update the tables with new da
 
 **Commit:**
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: update retrospective for v${VERSION}" --files .planning/RETROSPECTIVE.md
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs: update retrospective for v${VERSION}" --files .planning/RETROSPECTIVE.md
 ```
 
 </step>
@@ -530,7 +530,7 @@ Check branching strategy and offer merge options.
 Use `init milestone-op` for context, or load config directly:
 
 ```bash
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init execute-phase "1")
+INIT=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" init execute-phase "1")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -568,7 +568,7 @@ Options:
 3. **Keep branches** — Leave for manual handling
 ```
 
-AskUserQuestion with options: Squash merge (Recommended), Merge with history, Delete without merging, Keep branches.
+ask_user_question with options: Squash merge (Recommended), Merge with history, Delete without merging, Keep branches.
 
 **Squash merge:**
 
@@ -679,7 +679,7 @@ git push origin v[X.Y]
 Commit milestone completion.
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "chore: complete v[X.Y] milestone" --files .planning/milestones/v[X.Y]-ROADMAP.md .planning/milestones/v[X.Y]-REQUIREMENTS.md .planning/milestones/v[X.Y]-MILESTONE-AUDIT.md .planning/MILESTONES.md .planning/PROJECT.md .planning/STATE.md
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "chore: complete v[X.Y] milestone" --files .planning/milestones/v[X.Y]-ROADMAP.md .planning/milestones/v[X.Y]-REQUIREMENTS.md .planning/milestones/v[X.Y]-MILESTONE-AUDIT.md .planning/MILESTONES.md .planning/PROJECT.md .planning/STATE.md
 ```
 ```
 
@@ -709,7 +709,7 @@ Tag: v[X.Y]
 
 **Start Next Milestone** — questioning → research → requirements → roadmap
 
-`/gsd:new-milestone`
+`$gsd-new-milestone`
 
 <sub>`/clear` first → fresh context window</sub>
 
@@ -761,6 +761,6 @@ Milestone completion is successful when:
 - [ ] Known gaps recorded in MILESTONES.md if user proceeded with incomplete requirements
 - [ ] RETROSPECTIVE.md updated with milestone section
 - [ ] Cross-milestone trends updated
-- [ ] User knows next step (/gsd:new-milestone)
+- [ ] User knows next step ($gsd-new-milestone)
 
 </success_criteria>

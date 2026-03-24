@@ -56,13 +56,33 @@ npm run uninstall
 
 ### Автоматическая синхронизация
 
-Этот репозиторий автоматически синхронизируется с [оригинальным gsd-build/get-shit-done](https://github.com/gsd-build/get-shit-done) каждые 6 часов через GitHub Actions. При новом релизе upstream:
+Этот репозиторий автоматически синхронизируется с [релизами gsd-build/get-shit-done](https://github.com/gsd-build/get-shit-done/releases) каждые 6 часов через GitHub Actions. Workflow берёт конкретный release tag, преобразует snapshot в Qwen-формат и сохраняет маркер последней синхронизации в `.github/upstream-sync.json`. При новом релизе upstream:
 
 1. Workflow обнаруживает новый релиз
 2. Файлы автоматически трансформируются из формата Claude Code в Qwen Code CLI
-3. Создаётся и автоматически мерджится PR с изменениями
+3. Создаётся PR с изменениями и автоматически мерджится после прохождения проверок
 
 ---
+
+
+## Установка для Qwen Code CLI
+
+```bash
+# Глобально (все проекты)
+git clone https://github.com/YOUR_USERNAME/gsd-qwen.git ~/.qwen/get-shit-done
+
+# Локально (только текущий проект)
+git clone https://github.com/YOUR_USERNAME/gsd-qwen.git .qwen/get-shit-done
+```
+
+После установки используйте команды:
+```bash
+$gsd-new-project       # Инициализация нового проекта
+$gsd-plan-phase 1      # Планирование фазы 1
+$gsd-execute-phase 1   # Выполнение фазы 1
+$gsd-verify-work 1     # Верификация работы
+$gsd-help              # Справка по всем командам
+```
 
 ## Начало работы
 
@@ -82,16 +102,16 @@ $gsd-help              # Справка по всем командам
 
 | Claude Code (оригинал) | Qwen Code CLI (адаптация) |
 |------------------------|---------------------------|
-| `/gsd:new-project` | `$gsd-new-project` |
-| `/gsd:plan-phase` | `$gsd-plan-phase` |
-| `/gsd:execute-phase` | `$gsd-execute-phase` |
-| `/gsd:verify-work` | `$gsd-verify-work` |
-| `/gsd:help` | `$gsd-help` |
-| `/gsd:progress` | `$gsd-progress` |
-| `/gsd:discuss-phase` | `$gsd-discuss-phase` |
-| `/gsd:map-codebase` | `$gsd-map-codebase` |
-| `/gsd:pause-work` | `$gsd-pause-work` |
-| `/gsd:resume-work` | `$gsd-resume-work` |
+| `$gsd-new-project` | `$gsd-new-project` |
+| `$gsd-plan-phase` | `$gsd-plan-phase` |
+| `$gsd-execute-phase` | `$gsd-execute-phase` |
+| `$gsd-verify-work` | `$gsd-verify-work` |
+| `$gsd-help` | `$gsd-help` |
+| `$gsd-progress` | `$gsd-progress` |
+| `$gsd-discuss-phase` | `$gsd-discuss-phase` |
+| `$gsd-map-codebase` | `$gsd-map-codebase` |
+| `$gsd-pause-work` | `$gsd-pause-work` |
+| `$gsd-resume-work` | `$gsd-resume-work` |
 
 ---
 
@@ -201,12 +221,13 @@ gsd-qwen/
 
 ### Как работает
 
-1. **Обнаружение релиза** — workflow проверяет upstream каждые 6 часов
-2. **Трансформация** — скрипт `transform-to-qwen.js` конвертирует файлы:
-   - `commands/gsd/*.md` → `skills/gsd-*/SKILL.md`
-   - `~/.claude/` → `~/.qwen/`
-   - `/gsd:` → `$gsd-`
-   - Инструменты: `AskUserQuestion` → `ask_user_question`
+1. **Обнаружение релиза** — workflow проверяет upstream release feed каждые 6 часов
+2. **Трансформация** — скрипт `transform-to-qwen.js` конвертирует snapshot:
+   - `commands/gsd/*.md` → `commands/gsd/*.md` + `skills/gsd-*/SKILL.md`
+   - `get-shit-done/`, `docs/` (selected top-level files + `zh-CN`), `hooks/`, `bin/`, `assets/`, `README*.md` → Qwen-совместимый формат
+   - `~/.qwen/` → `~/.qwen/`
+   - `$gsd-` → `$gsd-`
+   - Инструменты: `ask_user_question` → `ask_user_question`
 3. **Валидация** — тесты проверяют корректность трансформации
 4. **Auto-merge** — PR автоматически мерджится после прохождения тестов
 
@@ -218,9 +239,9 @@ gsd-qwen/
 2. **New repository secret**
    - Name: `PAT_TOKEN`
    - Value: [Personal Access Token](https://github.com/settings/tokens) с правами:
-     - `Contents`: Read and write
-     - `Pull requests`: Read and write
-     - `Workflows`: Read and write
+     - `Contents`: read_file and write
+     - `Pull requests`: read_file and write
+     - `Workflows`: read_file and write
 
 ### Ручной запуск
 
@@ -259,11 +280,11 @@ gsd-qwen/
 
 | Аспект | Claude Code (оригинал) | Qwen Code CLI (адаптация) |
 |--------|------------------------|---------------------------|
-| Формат команд | `/gsd:command` | `$gsd-command` |
+| Формат команд | `$gsd-command` | `$gsd-command` |
 | Структура | `commands/gsd/*.md` | `skills/gsd-*/SKILL.md` |
-| Пути | `~/.claude/` | `~/.qwen/` |
-| Инструменты | `AskUserQuestion` | `ask_user_question` |
-| Subagents | `Task` | `task` |
+| Пути | `~/.qwen/` | `~/.qwen/` |
+| Инструменты | `ask_user_question` | `ask_user_question` |
+| Subagents | `task` | `task` |
 
 ---
 

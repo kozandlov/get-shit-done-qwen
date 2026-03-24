@@ -1,15 +1,15 @@
 ---
-name: gsd:discuss-phase
+name: gsd-discuss-phase
 description: Gather phase context through adaptive questioning before planning. Use --auto to skip interactive questions (Claude picks recommended defaults).
 argument-hint: "<phase> [--auto] [--batch] [--analyze]"
 allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Glob
-  - Grep
-  - AskUserQuestion
-  - Task
+  - read_file
+  - write_file
+  - run_shell_command
+  - glob
+  - grep_search
+  - ask_user_question
+  - task
   - mcp__context7__resolve-library-id
   - mcp__context7__query-docs
 ---
@@ -29,8 +29,8 @@ Extract implementation decisions that downstream agents need — researcher and 
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/discuss-phase.md
-@~/.claude/get-shit-done/templates/context.md
+@~/.qwen/get-shit-done/workflows/discuss-phase.md
+@~/.qwen/get-shit-done/templates/context.md
 </execution_context>
 
 <context>
@@ -42,12 +42,12 @@ Context files are resolved in-workflow using `init phase-op` and roadmap/state t
 <process>
 1. Validate phase number (error if missing or not in roadmap)
 2. Check if CONTEXT.md exists (offer update/view/skip if yes)
-3. **Load prior context** — Read PROJECT.md, REQUIREMENTS.md, STATE.md, and all prior CONTEXT.md files
+3. **Load prior context** — read_file PROJECT.md, REQUIREMENTS.md, STATE.md, and all prior CONTEXT.md files
 4. **Scout codebase** — Find reusable assets, patterns, and integration points
 5. **Analyze phase** — Check prior decisions, skip already-decided areas, generate remaining gray areas
 6. **Present gray areas** — Multi-select: which to discuss? Annotate with prior decisions + code context
 7. **Deep-dive each area** — 4 questions per area, code-informed options, Context7 for library choices
-8. **Write CONTEXT.md** — Sections match areas discussed + code_context section
+8. **write_file CONTEXT.md** — Sections match areas discussed + code_context section
 9. Offer next steps (research or plan)
 
 **CRITICAL: Scope guardrail**
@@ -89,3 +89,22 @@ Generate 3-4 **phase-specific** gray areas, not generic categories.
 - CONTEXT.md captures decisions, not vague vision
 - User knows next steps
 </success_criteria>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-discuss-phase ~/.qwen/skills/gsd-discuss-phase
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-discuss-phase .qwen/skills/gsd-discuss-phase
+```
+
+**Usage:**
+```bash
+$gsd-discuss-phase
+```

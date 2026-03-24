@@ -1,11 +1,11 @@
 ---
-name: gsd:insert-phase
+name: gsd-insert-phase
 description: Insert urgent work as decimal phase (e.g., 72.1) between existing phases
 argument-hint: <after> <description>
 allowed-tools:
-  - Read
-  - Write
-  - Bash
+  - read_file
+  - write_file
+  - run_shell_command
 ---
 
 <objective>
@@ -17,7 +17,7 @@ Purpose: Handle urgent work discovered during execution without renumbering enti
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/insert-phase.md
+@~/.qwen/get-shit-done/workflows/insert-phase.md
 </execution_context>
 
 <context>
@@ -27,6 +27,25 @@ Roadmap and state are resolved in-workflow via `init phase-op` and targeted tool
 </context>
 
 <process>
-Execute the insert-phase workflow from @~/.claude/get-shit-done/workflows/insert-phase.md end-to-end.
+Execute the insert-phase workflow from @~/.qwen/get-shit-done/workflows/insert-phase.md end-to-end.
 Preserve all validation gates (argument parsing, phase verification, decimal calculation, roadmap updates).
 </process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-insert-phase ~/.qwen/skills/gsd-insert-phase
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-insert-phase .qwen/skills/gsd-insert-phase
+```
+
+**Usage:**
+```bash
+$gsd-insert-phase
+```

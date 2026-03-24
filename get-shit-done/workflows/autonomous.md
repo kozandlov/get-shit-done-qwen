@@ -6,7 +6,7 @@ Drive all remaining milestone phases autonomously. For each incomplete phase: di
 
 <required_reading>
 
-Read all files referenced by the invoking prompt's execution_context before starting.
+read_file all files referenced by the invoking prompt's execution_context before starting.
 
 </required_reading>
 
@@ -28,13 +28,13 @@ fi
 Bootstrap via milestone-level init:
 
 ```bash
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init milestone-op)
+INIT=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" init milestone-op)
 ```
 
 Parse JSON for: `milestone_version`, `milestone_name`, `phase_count`, `completed_phases`, `roadmap_exists`, `state_exists`, `commit_docs`.
 
-**If `roadmap_exists` is false:** Error — "No ROADMAP.md found. Run `/gsd:new-milestone` first."
-**If `state_exists` is false:** Error — "No STATE.md found. Run `/gsd:new-milestone` first."
+**If `roadmap_exists` is false:** Error — "No ROADMAP.md found. Run `$gsd-new-milestone` first."
+**If `state_exists` is false:** Error — "No STATE.md found. Run `$gsd-new-milestone` first."
 
 Display startup banner:
 
@@ -58,7 +58,7 @@ If `FROM_PHASE` is set, display: `Starting from phase ${FROM_PHASE}`
 Run phase discovery:
 
 ```bash
-ROADMAP=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)
+ROADMAP=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)
 ```
 
 Parse the JSON `phases` array.
@@ -97,7 +97,7 @@ Exit cleanly.
 **Fetch details for each phase:**
 
 ```bash
-DETAIL=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase ${PHASE_NUM})
+DETAIL=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase ${PHASE_NUM})
 ```
 
 Extract `phase_name`, `goal`, `success_criteria` from each. Store for use in execute_phase and transition messages.
@@ -123,7 +123,7 @@ Where N = current phase number (from the ROADMAP, e.g., 6), T = total milestone 
 Check if CONTEXT.md already exists for this phase:
 
 ```bash
-PHASE_STATE=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op ${PHASE_NUM})
+PHASE_STATE=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" init phase-op ${PHASE_NUM})
 ```
 
 Parse `has_context` from JSON.
@@ -141,7 +141,7 @@ Proceed to 3b.
 After smart_discuss completes, verify context was written:
 
 ```bash
-PHASE_STATE=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op ${PHASE_NUM})
+PHASE_STATE=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" init phase-op ${PHASE_NUM})
 ```
 
 Check `has_context`. If false → go to handle_blocker: "Smart discuss for phase ${PHASE_NUM} did not produce CONTEXT.md."
@@ -171,7 +171,7 @@ VERIFY_STATUS=$(grep "^status:" "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | h
 Where `PHASE_DIR` comes from the `init phase-op` call already made in step 3a. If the variable is not in scope, re-fetch:
 
 ```bash
-PHASE_STATE=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op ${PHASE_NUM})
+PHASE_STATE=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" init phase-op ${PHASE_NUM})
 ```
 
 Parse `phase_dir` from the JSON.
@@ -191,9 +191,9 @@ Proceed to iterate step.
 
 **If `human_needed`:**
 
-Read the human_verification section from VERIFICATION.md to get the count and items requiring manual testing.
+read_file the human_verification section from VERIFICATION.md to get the count and items requiring manual testing.
 
-Display the items, then ask user via AskUserQuestion:
+Display the items, then ask user via ask_user_question:
 - **question:** "Phase ${PHASE_NUM} has items needing manual verification. Validate now or continue to next phase?"
 - **options:** "Validate now" / "Continue without validation"
 
@@ -209,13 +209,13 @@ On **"Continue without validation"**: Display `Phase ${PHASE_NUM} ⏭ Human vali
 
 **If `gaps_found`:**
 
-Read gap summary from VERIFICATION.md (score and missing items). Display:
+read_file gap summary from VERIFICATION.md (score and missing items). Display:
 ```
 ⚠ Phase ${PHASE_NUM}: ${PHASE_NAME} — Gaps Found
 Score: {N}/{M} must-haves verified
 ```
 
-Ask user via AskUserQuestion:
+Ask user via ask_user_question:
 - **question:** "Gaps found in phase ${PHASE_NUM}. How to proceed?"
 - **options:** "Run gap closure" / "Continue without fixing" / "Stop autonomous mode"
 
@@ -239,7 +239,7 @@ VERIFY_STATUS=$(grep "^status:" "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | h
 
 If `passed` or `human_needed`: Route normally (continue or ask user as above).
 
-If still `gaps_found` after this retry: Display "Gaps persist after closure attempt." and ask via AskUserQuestion:
+If still `gaps_found` after this retry: Display "Gaps persist after closure attempt." and ask via ask_user_question:
 - **question:** "Gap closure did not fully resolve issues. How to proceed?"
 - **options:** "Continue anyway" / "Stop autonomous mode"
 
@@ -265,7 +265,7 @@ Run smart discuss for the current phase. Proposes grey area answers in batch tab
 **Inputs:** `PHASE_NUM` from execute_phase. Run init to get phase paths:
 
 ```bash
-PHASE_STATE=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op ${PHASE_NUM})
+PHASE_STATE=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" init phase-op ${PHASE_NUM})
 ```
 
 Parse from JSON: `phase_dir`, `phase_slug`, `padded_phase`, `phase_name`.
@@ -274,9 +274,9 @@ Parse from JSON: `phase_dir`, `phase_slug`, `padded_phase`, `phase_name`.
 
 ### Sub-step 1: Load prior context
 
-Read project-level and prior phase context to avoid re-asking decided questions.
+read_file project-level and prior phase context to avoid re-asking decided questions.
 
-**Read project files:**
+**read_file project files:**
 
 ```bash
 cat .planning/PROJECT.md 2>/dev/null
@@ -289,15 +289,15 @@ Extract from these:
 - **REQUIREMENTS.md** — Acceptance criteria, constraints, must-haves vs nice-to-haves
 - **STATE.md** — Current progress, decisions logged so far
 
-**Read all prior CONTEXT.md files:**
+**read_file all prior CONTEXT.md files:**
 
 ```bash
 find .planning/phases -name "*-CONTEXT.md" 2>/dev/null | sort
 ```
 
 For each CONTEXT.md where phase number < current phase:
-- Read the `<decisions>` section — these are locked preferences
-- Read `<specifics>` — particular references or "I want it like X" moments
+- read_file the `<decisions>` section — these are locked preferences
+- read_file `<specifics>` — particular references or "I want it like X" moments
 - Note patterns (e.g., "user consistently prefers minimal UI", "user rejected verbose output")
 
 **Build internal prior_decisions context** (do not write to file):
@@ -329,7 +329,7 @@ Lightweight codebase scan to inform grey area identification and proposals. Keep
 ls .planning/codebase/*.md 2>/dev/null
 ```
 
-**If codebase maps exist:** Read the most relevant ones (CONVENTIONS.md, STRUCTURE.md, STACK.md based on phase type). Extract reusable components, established patterns, integration points. Skip to building context below.
+**If codebase maps exist:** read_file the most relevant ones (CONVENTIONS.md, STRUCTURE.md, STACK.md based on phase type). Extract reusable components, established patterns, integration points. Skip to building context below.
 
 **If no codebase maps, do targeted grep:**
 
@@ -340,7 +340,7 @@ grep -rl "{term1}\|{term2}" src/ app/ --include="*.ts" --include="*.tsx" --inclu
 ls src/components/ src/hooks/ src/lib/ src/utils/ 2>/dev/null
 ```
 
-Read the 3-5 most relevant files to understand existing patterns.
+read_file the 3-5 most relevant files to understand existing patterns.
 
 **Build internal codebase_context** (do not write to file):
 - **Reusable assets** — existing components, hooks, utilities usable in this phase
@@ -354,7 +354,7 @@ Read the 3-5 most relevant files to understand existing patterns.
 **Get phase details:**
 
 ```bash
-DETAIL=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase ${PHASE_NUM})
+DETAIL=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase ${PHASE_NUM})
 ```
 
 Extract `goal`, `requirements`, `success_criteria` from the JSON response.
@@ -414,21 +414,21 @@ Display a table:
 | 4 | {question} | {answer} — {rationale} | {alt1} |
 ```
 
-Then prompt the user via **AskUserQuestion**:
+Then prompt the user via **ask_user_question**:
 - **header:** "Area {M}/{N}"
 - **question:** "Accept these answers for {Area Name}?"
-- **options:** Build dynamically — always "Accept all" first, then "Change Q1" through "Change QN" for each question (up to 4), then "Discuss deeper" last. Cap at 6 explicit options max (AskUserQuestion adds "Other" automatically).
+- **options:** Build dynamically — always "Accept all" first, then "Change Q1" through "Change QN" for each question (up to 4), then "Discuss deeper" last. Cap at 6 explicit options max (ask_user_question adds "Other" automatically).
 
 **On "Accept all":** Record all recommended answers for this area. Move to next area.
 
-**On "Change QN":** Use AskUserQuestion with the alternatives for that specific question:
+**On "Change QN":** Use ask_user_question with the alternatives for that specific question:
 - **header:** "{Area Name}"
 - **question:** "Q{N}: {question text}"
 - **options:** List the 1-2 alternatives plus "You decide" (maps to Claude's Discretion)
 
 Record the user's choice. Re-display the updated table with the change reflected. Re-present the full acceptance prompt so the user can make additional changes or accept.
 
-**On "Discuss deeper":** Switch to interactive mode for this area only — ask questions one at a time using AskUserQuestion with 2-3 concrete options per question plus "You decide". After 4 questions, prompt:
+**On "Discuss deeper":** Switch to interactive mode for this area only — ask questions one at a time using ask_user_question with 2-3 concrete options per question plus "You decide". After 4 questions, prompt:
 - **header:** "{Area Name}"
 - **question:** "More questions about {area name}, or move to next?"
 - **options:** "More questions" / "Next area"
@@ -450,7 +450,7 @@ Track deferred ideas internally for inclusion in CONTEXT.md.
 
 ---
 
-### Sub-step 5: Write CONTEXT.md
+### Sub-step 5: write_file CONTEXT.md
 
 After all areas are resolved (or infrastructure skip), write the CONTEXT.md file.
 
@@ -521,12 +521,12 @@ Use **exactly** this structure (identical to discuss-phase output):
 </deferred>
 ```
 
-Write the file.
+write_file the file.
 
 **Commit:**
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs(${PADDED_PHASE}): smart discuss context" --files "${phase_dir}/${padded_phase}-CONTEXT.md"
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs(${PADDED_PHASE}): smart discuss context" --files "${phase_dir}/${padded_phase}-CONTEXT.md"
 ```
 
 Display confirmation:
@@ -545,7 +545,7 @@ Decisions captured: {count} across {area_count} areas
 After each phase completes, re-read ROADMAP.md to catch phases inserted mid-execution (decimal phases like 5.1):
 
 ```bash
-ROADMAP=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)
+ROADMAP=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)
 ```
 
 Re-filter incomplete phases using the same logic as discover_phases:
@@ -553,7 +553,7 @@ Re-filter incomplete phases using the same logic as discover_phases:
 - Apply `--from N` filter if originally provided
 - Sort by number ascending
 
-Read STATE.md fresh:
+read_file STATE.md fresh:
 
 ```bash
 cat .planning/STATE.md
@@ -612,33 +612,33 @@ Proceed to 5b (no user pause — per CTRL-01).
 
 **If `gaps_found`:**
 
-Read the gaps summary from the audit file. Display:
+read_file the gaps summary from the audit file. Display:
 ```
 ⚠ Audit: Gaps Found
 ```
 
-Ask user via AskUserQuestion:
+Ask user via ask_user_question:
 - **question:** "Milestone audit found gaps. How to proceed?"
 - **options:** "Continue anyway — accept gaps" / "Stop — fix gaps manually"
 
 On **"Continue anyway"**: Display `Audit ⏭ Gaps accepted — proceeding to complete milestone` and proceed to 5b.
 
-On **"Stop"**: Go to handle_blocker with "User stopped — audit gaps remain. Run /gsd:audit-milestone to review, then /gsd:complete-milestone when ready."
+On **"Stop"**: Go to handle_blocker with "User stopped — audit gaps remain. Run $gsd-audit-milestone to review, then $gsd-complete-milestone when ready."
 
 **If `tech_debt`:**
 
-Read the tech debt summary from the audit file. Display:
+read_file the tech debt summary from the audit file. Display:
 ```
 ⚠ Audit: Tech Debt Identified
 ```
 
-Show the summary, then ask user via AskUserQuestion:
+Show the summary, then ask user via ask_user_question:
 - **question:** "Milestone audit found tech debt. How to proceed?"
 - **options:** "Continue with tech debt" / "Stop — address debt first"
 
 On **"Continue with tech debt"**: Display `Audit ⏭ Tech debt acknowledged — proceeding to complete milestone` and proceed to 5b.
 
-On **"Stop"**: Go to handle_blocker with "User stopped — tech debt to address. Run /gsd:audit-milestone to review details."
+On **"Stop"**: Go to handle_blocker with "User stopped — tech debt to address. Run $gsd-audit-milestone to review details."
 
 **5b. Complete Milestone**
 
@@ -684,7 +684,7 @@ Display final completion banner:
 
 ## 6. Handle Blocker
 
-When any phase operation fails or a blocker is detected, present 3 options via AskUserQuestion:
+When any phase operation fails or a blocker is detected, present 3 options via ask_user_question:
 
 **Prompt:** "Phase {N} ({Name}) encountered an issue: {description}"
 
@@ -708,7 +708,7 @@ When any phase operation fails or a blocker is detected, present 3 options via A
  Skipped: {list of skipped phases}
  Remaining: {list of remaining phases}
 
- Resume with: /gsd:autonomous --from {next_phase}
+ Resume with: $gsd-autonomous --from {next_phase}
 ```
 
 </step>

@@ -3,7 +3,7 @@ Initialize a new project through unified flow: questioning, research (optional),
 </purpose>
 
 <required_reading>
-Read all files referenced by the invoking prompt's execution_context before starting.
+read_file all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
 <auto_mode>
@@ -26,7 +26,7 @@ Check if `--auto` flag is present in $ARGUMENTS.
 **Document requirement:**
 Auto mode requires an idea document — either:
 
-- File reference: `/gsd:new-project --auto @prd.md`
+- File reference: `$gsd-new-project --auto @prd.md`
 - Pasted/written text in the prompt
 
 If no document content provided, error:
@@ -35,8 +35,8 @@ If no document content provided, error:
 Error: --auto requires an idea document.
 
 Usage:
-  /gsd:new-project --auto @your-idea.md
-  /gsd:new-project --auto [paste or write your idea here]
+  $gsd-new-project --auto @your-idea.md
+  $gsd-new-project --auto [paste or write your idea here]
 
 The document should describe what you want to build.
 ```
@@ -50,13 +50,13 @@ The document should describe what you want to build.
 **MANDATORY FIRST STEP — Execute these checks before ANY user interaction:**
 
 ```bash
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init new-project)
+INIT=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" init new-project)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Parse JSON for: `researcher_model`, `synthesizer_model`, `roadmapper_model`, `commit_docs`, `project_exists`, `has_codebase_map`, `planning_exists`, `has_existing_code`, `has_package_file`, `is_brownfield`, `needs_codebase_map`, `has_git`, `project_path`.
 
-**If `project_exists` is true:** Error — project already initialized. Use `/gsd:progress`.
+**If `project_exists` is true:** Error — project already initialized. Use `$gsd-progress`.
 
 **If `has_git` is false:** Initialize git:
 
@@ -70,18 +70,18 @@ git init
 
 **If `needs_codebase_map` is true** (from init — existing code detected but no codebase map):
 
-Use AskUserQuestion:
+Use ask_user_question:
 
 - header: "Codebase"
 - question: "I detected existing code in this directory. Would you like to map the codebase first?"
 - options:
-  - "Map codebase first" — Run /gsd:map-codebase to understand existing architecture (Recommended)
+  - "Map codebase first" — Run $gsd-map-codebase to understand existing architecture (Recommended)
   - "Skip mapping" — Proceed with project initialization
 
 **If "Map codebase first":**
 
 ```
-Run `/gsd:map-codebase` first, then return to `/gsd:new-project`
+Run `$gsd-map-codebase` first, then return to `$gsd-new-project`
 ```
 
 Exit command.
@@ -97,7 +97,7 @@ YOLO mode is implicit (auto = YOLO). Ask remaining config questions:
 **Round 1 — Core settings (3 questions, no Mode question):**
 
 ```
-AskUserQuestion([
+ask_user_question([
   {
     header: "Granularity",
     question: "How finely should scope be sliced into phases?",
@@ -132,7 +132,7 @@ AskUserQuestion([
 **Round 2 — Workflow agents (same as Step 5):**
 
 ```
-AskUserQuestion([
+ask_user_question([
   {
     header: "Research",
     question: "Research before planning each phase? (adds tokens/time)",
@@ -178,7 +178,7 @@ Create `.planning/config.json` with all settings (CLI fills in remaining default
 
 ```bash
 mkdir -p .planning
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-new-project '{"mode":"yolo","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":true|false,"auto_advance":true}}'
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" config-new-project '{"mode":"yolo","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":true|false,"auto_advance":true}}'
 ```
 
 **If commit_docs = No:** Add `.planning/` to `.gitignore`.
@@ -187,13 +187,13 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-new-project '{"mode"
 
 ```bash
 mkdir -p .planning
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "chore: add project config" --files .planning/config.json
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "chore: add project config" --files .planning/config.json
 ```
 
 **Persist auto-advance chain flag to config (survives context compaction):**
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-set workflow._auto_chain_active true
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" config-set workflow._auto_chain_active true
 ```
 
 Proceed to Step 4 (skip Steps 3 and 5).
@@ -212,7 +212,7 @@ Proceed to Step 4 (skip Steps 3 and 5).
 
 **Open the conversation:**
 
-Ask inline (freeform, NOT AskUserQuestion):
+Ask inline (freeform, NOT ask_user_question):
 
 "What do you want to build?"
 
@@ -228,7 +228,7 @@ When disabled (default), ask questions directly as before.
 
 **Follow the thread:**
 
-Based on what they said, ask follow-up questions that dig into their response. Use AskUserQuestion with options that probe what they mentioned — interpretations, clarifications, concrete examples.
+Based on what they said, ask follow-up questions that dig into their response. Use ask_user_question with options that probe what they mentioned — interpretations, clarifications, concrete examples.
 
 Keep following threads. Each answer opens new threads to explore. Ask about:
 
@@ -252,7 +252,7 @@ As you go, mentally check the context checklist from `questioning.md`. If gaps r
 
 **Decision gate:**
 
-When you could write a clear PROJECT.md, use AskUserQuestion:
+When you could write a clear PROJECT.md, use ask_user_question:
 
 - header: "Ready?"
 - question: "I think I understand what you're after. Ready to create PROJECT.md?"
@@ -264,7 +264,7 @@ If "Keep exploring" — ask what they want to add, or identify gaps and probe na
 
 Loop until "Create PROJECT.md" selected.
 
-## 4. Write PROJECT.md
+## 4. write_file PROJECT.md
 
 **If auto mode:** Synthesize from provided document. No "Ready?" gate was shown — proceed directly to commit.
 
@@ -299,7 +299,7 @@ All Active requirements are hypotheses until shipped and validated.
 
 Infer Validated requirements from existing code:
 
-1. Read `.planning/codebase/ARCHITECTURE.md` and `STACK.md`
+1. read_file `.planning/codebase/ARCHITECTURE.md` and `STACK.md`
 2. Identify what the codebase already does
 3. These become the initial Validated set
 
@@ -348,14 +348,14 @@ Initialize with any decisions made during questioning:
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/gsd:transition`):
+**After each phase transition** (via `$gsd-transition`):
 1. Requirements invalidated? → Move to Out of Scope with reason
 2. Requirements validated? → Move to Validated with phase reference
 3. New requirements emerged? → Add to Active
 4. Decisions to log? → Add to Key Decisions
 5. "What This Is" still accurate? → Update if drifted
 
-**After each milestone** (via `/gsd:complete-milestone`):
+**After each milestone** (via `$gsd-complete-milestone`):
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
@@ -368,7 +368,7 @@ Do not compress. Capture everything gathered.
 
 ```bash
 mkdir -p .planning
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: initialize project" --files .planning/PROJECT.md
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs: initialize project" --files .planning/PROJECT.md
 ```
 
 ## 5. Workflow Preferences
@@ -378,7 +378,7 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: initialize pr
 **Check for global defaults** at `~/.gsd/defaults.json`. If the file exists, offer to use saved defaults:
 
 ```
-AskUserQuestion([
+ask_user_question([
   {
     question: "Use your saved default settings? (from ~/.gsd/defaults.json)",
     header: "Defaults",
@@ -498,10 +498,10 @@ Create `.planning/config.json` with all settings (CLI fills in remaining default
 
 ```bash
 mkdir -p .planning
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-new-project '{"mode":"[yolo|interactive]","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":[false if granularity=coarse, true otherwise]}}'
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" config-new-project '{"mode":"[yolo|interactive]","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":[false if granularity=coarse, true otherwise]}}'
 ```
 
-**Note:** Run `/gsd:settings` anytime to update model profile, workflow agents, branching strategy, and other preferences.
+**Note:** Run `$gsd-settings` anytime to update model profile, workflow agents, branching strategy, and other preferences.
 
 **If commit_docs = No:**
 
@@ -515,7 +515,7 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-new-project '{"mode"
 **Commit config.json:**
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "chore: add project config" --files .planning/config.json
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "chore: add project config" --files .planning/config.json
 ```
 
 ## 5.1. Sub-Repo Detection
@@ -532,7 +532,7 @@ find . -maxdepth 1 -type d -not -name ".*" -not -name "node_modules" -exec test 
 
 Strip the `./` prefix to get directory names (e.g., `./backend` → `backend`).
 
-Use AskUserQuestion:
+Use ask_user_question:
 
 - header: "Multi-Repo Workspace"
 - question: "I detected separate git repos in this workspace. Which directories contain code that GSD should commit to?"
@@ -558,7 +558,7 @@ Use models from init: `researcher_model`, `synthesizer_model`, `roadmapper_model
 
 **If auto mode:** Default to "Research first" without asking.
 
-Use AskUserQuestion:
+Use ask_user_question:
 
 - header: "Research"
 - question: "Research the domain ecosystem before defining requirements?"
@@ -604,7 +604,7 @@ Display spawning indicator:
 Spawn 4 parallel gsd-project-researcher agents with path references:
 
 ```
-Task(prompt="<research_type>
+task(prompt="<research_type>
 Project Research — Stack dimension for [domain].
 </research_type>
 
@@ -637,12 +637,12 @@ Your STACK.md feeds into roadmap creation. Be prescriptive:
 </quality_gate>
 
 <output>
-Write to: .planning/research/STACK.md
-Use template: ~/.claude/get-shit-done/templates/research-project/STACK.md
+write_file to: .planning/research/STACK.md
+Use template: ~/.qwen/get-shit-done/templates/research-project/STACK.md
 </output>
 ", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Stack research")
 
-Task(prompt="<research_type>
+task(prompt="<research_type>
 Project Research — Features dimension for [domain].
 </research_type>
 
@@ -675,12 +675,12 @@ Your FEATURES.md feeds into requirements definition. Categorize clearly:
 </quality_gate>
 
 <output>
-Write to: .planning/research/FEATURES.md
-Use template: ~/.claude/get-shit-done/templates/research-project/FEATURES.md
+write_file to: .planning/research/FEATURES.md
+Use template: ~/.qwen/get-shit-done/templates/research-project/FEATURES.md
 </output>
 ", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Features research")
 
-Task(prompt="<research_type>
+task(prompt="<research_type>
 Project Research — Architecture dimension for [domain].
 </research_type>
 
@@ -713,12 +713,12 @@ Your ARCHITECTURE.md informs phase structure in roadmap. Include:
 </quality_gate>
 
 <output>
-Write to: .planning/research/ARCHITECTURE.md
-Use template: ~/.claude/get-shit-done/templates/research-project/ARCHITECTURE.md
+write_file to: .planning/research/ARCHITECTURE.md
+Use template: ~/.qwen/get-shit-done/templates/research-project/ARCHITECTURE.md
 </output>
 ", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Architecture research")
 
-Task(prompt="<research_type>
+task(prompt="<research_type>
 Project Research — Pitfalls dimension for [domain].
 </research_type>
 
@@ -751,8 +751,8 @@ Your PITFALLS.md prevents mistakes in roadmap/planning. For each pitfall:
 </quality_gate>
 
 <output>
-Write to: .planning/research/PITFALLS.md
-Use template: ~/.claude/get-shit-done/templates/research-project/PITFALLS.md
+write_file to: .planning/research/PITFALLS.md
+Use template: ~/.qwen/get-shit-done/templates/research-project/PITFALLS.md
 </output>
 ", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Pitfalls research")
 ```
@@ -760,7 +760,7 @@ Use template: ~/.claude/get-shit-done/templates/research-project/PITFALLS.md
 After all 4 agents complete, spawn synthesizer to create SUMMARY.md:
 
 ```
-Task(prompt="
+task(prompt="
 <task>
 Synthesize research outputs into SUMMARY.md.
 </task>
@@ -773,8 +773,8 @@ Synthesize research outputs into SUMMARY.md.
 </files_to_read>
 
 <output>
-Write to: .planning/research/SUMMARY.md
-Use template: ~/.claude/get-shit-done/templates/research-project/SUMMARY.md
+write_file to: .planning/research/SUMMARY.md
+Use template: ~/.qwen/get-shit-done/templates/research-project/SUMMARY.md
 Commit after writing.
 </output>
 ", subagent_type="gsd-research-synthesizer", model="{synthesizer_model}", description="Synthesize research")
@@ -810,20 +810,20 @@ Display stage banner:
 
 **Load context:**
 
-Read PROJECT.md and extract:
+read_file PROJECT.md and extract:
 
 - Core value (the ONE thing that must work)
 - Stated constraints (budget, timeline, tech limitations)
 - Any explicit scope boundaries
 
-**If research exists:** Read research/FEATURES.md and extract feature categories.
+**If research exists:** read_file research/FEATURES.md and extract feature categories.
 
 **If auto mode:**
 
 - Auto-include all table stakes features (users expect these)
 - Include features explicitly mentioned in provided document
 - Auto-defer differentiators not mentioned in document
-- Skip per-category AskUserQuestion loops
+- Skip per-category ask_user_question loops
 - Skip "Any additions?" question
 - Skip requirements approval gate
 - Generate REQUIREMENTS.md and commit directly
@@ -865,7 +865,7 @@ For each capability mentioned:
 
 **Scope each category:**
 
-For each category, use AskUserQuestion:
+For each category, use ask_user_question:
 
 - header: "[Category]" (max 12 chars)
 - question: "Which [category] features are in v1?"
@@ -884,7 +884,7 @@ Track responses:
 
 **Identify gaps:**
 
-Use AskUserQuestion:
+Use ask_user_question:
 
 - header: "Additions"
 - question: "Any requirements research missed? (Features specific to your vision)"
@@ -949,7 +949,7 @@ If "adjust": Return to scoping.
 **Commit requirements:**
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: define v1 requirements" --files .planning/REQUIREMENTS.md
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs: define v1 requirements" --files .planning/REQUIREMENTS.md
 ```
 
 ## 8. Create Roadmap
@@ -967,7 +967,7 @@ Display stage banner:
 Spawn gsd-roadmapper agent with path references:
 
 ```
-Task(prompt="
+task(prompt="
 <planning_context>
 
 <files_to_read>
@@ -985,10 +985,10 @@ Create roadmap:
 2. Map every v1 requirement to exactly one phase
 3. Derive 2-5 success criteria per phase (observable user behaviors)
 4. Validate 100% coverage
-5. Write files immediately (ROADMAP.md, STATE.md, update REQUIREMENTS.md traceability)
+5. write_file files immediately (ROADMAP.md, STATE.md, update REQUIREMENTS.md traceability)
 6. Return ROADMAP CREATED with summary
 
-Write files first, then return. This ensures artifacts persist even if context is lost.
+write_file files first, then return. This ensures artifacts persist even if context is lost.
 </instructions>
 ", subagent_type="gsd-roadmapper", model="{roadmapper_model}", description="Create roadmap")
 ```
@@ -1003,7 +1003,7 @@ Write files first, then return. This ensures artifacts persist even if context i
 
 **If `## ROADMAP CREATED`:**
 
-Read the created ROADMAP.md and present it nicely inline:
+read_file the created ROADMAP.md and present it nicely inline:
 
 ```
 ---
@@ -1045,7 +1045,7 @@ Success criteria:
 
 **CRITICAL: Ask for approval before committing (interactive mode only):**
 
-Use AskUserQuestion:
+Use ask_user_question:
 
 - header: "Roadmap"
 - question: "Does this roadmap structure work for you?"
@@ -1062,7 +1062,7 @@ Use AskUserQuestion:
 - Re-spawn roadmapper with revision context:
 
   ```
-  Task(prompt="
+  task(prompt="
   <revision>
   User feedback on roadmap:
   [user's notes]
@@ -1071,7 +1071,7 @@ Use AskUserQuestion:
   - .planning/ROADMAP.md (Current roadmap to revise)
   </files_to_read>
 
-  Update the roadmap based on feedback. Edit files in place.
+  Update the roadmap based on feedback. edit files in place.
   Return ROADMAP REVISED with changes made.
   </revision>
   ", subagent_type="gsd-roadmapper", model="{roadmapper_model}", description="Revise roadmap")
@@ -1085,7 +1085,7 @@ Use AskUserQuestion:
 **Generate or refresh project CLAUDE.md before final commit:**
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" generate-claude-md
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" generate-claude-md
 ```
 
 This ensures new projects get the default GSD workflow-enforcement guidance and current project context in `CLAUDE.md`.
@@ -1093,7 +1093,7 @@ This ensures new projects get the default GSD workflow-enforcement guidance and 
 **Commit roadmap (after approval or auto mode):**
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md CLAUDE.md
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md CLAUDE.md
 ```
 
 ## 9. Done
@@ -1127,7 +1127,7 @@ Present completion summary:
 ╚══════════════════════════════════════════╝
 ```
 
-Exit skill and invoke SlashCommand("/gsd:discuss-phase 1 --auto")
+Exit skill and invoke SlashCommand("$gsd-discuss-phase 1 --auto")
 
 **If interactive mode:**
 
@@ -1138,14 +1138,14 @@ Exit skill and invoke SlashCommand("/gsd:discuss-phase 1 --auto")
 
 **Phase 1: [Phase Name]** — [Goal from ROADMAP.md]
 
-/gsd:discuss-phase 1 — gather context and clarify approach
+$gsd-discuss-phase 1 — gather context and clarify approach
 
 <sub>/clear first → fresh context window</sub>
 
 ---
 
 **Also available:**
-- /gsd:plan-phase 1 — skip discussion, plan directly
+- $gsd-plan-phase 1 — skip discussion, plan directly
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -1188,7 +1188,7 @@ Exit skill and invoke SlashCommand("/gsd:discuss-phase 1 --auto")
 - [ ] STATE.md initialized
 - [ ] REQUIREMENTS.md traceability updated
 - [ ] CLAUDE.md generated with GSD workflow guidance
-- [ ] User knows next step is `/gsd:discuss-phase 1`
+- [ ] User knows next step is `$gsd-discuss-phase 1`
 
 **Atomic commits:** Each phase commits its artifacts immediately. If context is lost, artifacts persist.
 

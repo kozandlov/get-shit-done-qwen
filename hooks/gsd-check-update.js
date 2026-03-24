@@ -19,12 +19,12 @@ function detectConfigDir(baseDir) {
   if (envDir && fs.existsSync(path.join(envDir, 'get-shit-done', 'VERSION'))) {
     return envDir;
   }
-  for (const dir of ['.config/opencode', '.opencode', '.gemini', '.claude']) {
+  for (const dir of ['.config/opencode', '.opencode', '.gemini', '.qwen']) {
     if (fs.existsSync(path.join(baseDir, dir, 'get-shit-done', 'VERSION'))) {
       return path.join(baseDir, dir);
     }
   }
-  return envDir || path.join(baseDir, '.claude');
+  return envDir || path.join(baseDir, '.qwen');
 }
 
 const globalConfigDir = detectConfigDir(homeDir);
@@ -92,7 +92,7 @@ const child = spawn(process.execPath, ['-e', `
 
   let latest = null;
   try {
-    latest = execSync('npm view get-shit-done-cc version', { encoding: 'utf8', timeout: 10000, windowsHide: true }).trim();
+    latest = execSync('npm view gsd-qwen version', { encoding: 'utf8', timeout: 10000, windowsHide: true }).trim();
   } catch (e) {}
 
   const result = {

@@ -45,7 +45,7 @@
 1. 读取 .planning/config.json
 2. 检查 model_overrides 是否有代理特定覆盖
 3. 如果没有覆盖，在配置表中查找代理
-4. 将 model 参数传递给 Task 调用
+4. 将 model 参数传递给 task 调用
 ```
 
 ## 单代理覆盖
@@ -66,7 +66,7 @@
 
 ## 切换配置
 
-运行时：`/gsd:set-profile <profile>`
+运行时：`$gsd-set-profile <profile>`
 
 项目默认值：在 `.planning/config.json` 中设置：
 ```json

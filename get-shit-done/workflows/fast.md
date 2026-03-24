@@ -1,11 +1,11 @@
 <purpose>
-Execute a trivial task inline without subagent overhead. No PLAN.md, no Task spawning,
+Execute a trivial task inline without subagent overhead. No PLAN.md, no task spawning,
 no research, no plan checking. Just: understand → do → commit → log.
 
 For tasks like: fix a typo, update a config value, add a missing import, rename a
 variable, commit uncommitted work, add a .gitignore entry, bump a version number.
 
-Use /gsd:quick for anything that needs multi-step planning or research.
+Use $gsd-quick for anything that needs multi-step planning or research.
 </purpose>
 
 <process>
@@ -34,8 +34,8 @@ If the task seems non-trivial (multi-file refactor, new feature, needs research)
 say:
 
 ```
-This looks like it needs planning. Use /gsd:quick instead:
-  /gsd:quick "{task description}"
+This looks like it needs planning. Use $gsd-quick instead:
+  $gsd-quick "{task description}"
 ```
 
 And stop.
@@ -44,7 +44,7 @@ And stop.
 <step name="execute_inline">
 Do the work directly:
 
-1. Read the relevant file(s)
+1. read_file the relevant file(s)
 2. Make the change(s)
 3. Verify the change works (run existing tests if applicable, or do a quick sanity check)
 
@@ -90,15 +90,15 @@ No next-step suggestions. No workflow routing. Just done.
 </process>
 
 <guardrails>
-- NEVER spawn a Task/subagent — this runs inline
+- NEVER spawn a task/subagent — this runs inline
 - NEVER create PLAN.md or SUMMARY.md files
 - NEVER run research or plan-checking
-- If the task takes more than 3 file edits, STOP and redirect to /gsd:quick
-- If you're unsure how to implement it, STOP and redirect to /gsd:quick
+- If the task takes more than 3 file edits, STOP and redirect to $gsd-quick
+- If you're unsure how to implement it, STOP and redirect to $gsd-quick
 </guardrails>
 
 <success_criteria>
-- [ ] Task completed in current context (no subagents)
+- [ ] task completed in current context (no subagents)
 - [ ] Atomic git commit with conventional message
 - [ ] STATE.md updated if it exists
 - [ ] Total operation under 2 minutes wall time

@@ -3,7 +3,7 @@ Check for GSD updates via npm, display changelog for versions between installed 
 </purpose>
 
 <required_reading>
-Read all files referenced by the invoking prompt's execution_context before starting.
+read_file all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
 <process>
@@ -17,14 +17,14 @@ First, derive `PREFERRED_RUNTIME` from the invoking prompt's `execution_context`
 - Path contains `/.config/opencode/` or `/.opencode/` -> `opencode`
 - Otherwise -> `claude`
 
-Use `PREFERRED_RUNTIME` as the first runtime checked so `/gsd:update` targets the runtime that invoked it.
+Use `PREFERRED_RUNTIME` as the first runtime checked so `$gsd-update` targets the runtime that invoked it.
 
 ```bash
 # Runtime candidates: "<runtime>:<config-dir>" stored as an array.
 # Using an array instead of a space-separated string ensures correct
 # iteration in both bash and zsh (zsh does not word-split unquoted
 # variables by default). Fixes #1173.
-RUNTIME_DIRS=( "claude:.claude" "opencode:.config/opencode" "opencode:.opencode" "gemini:.gemini" "codex:.codex" )
+RUNTIME_DIRS=( "claude:.qwen" "opencode:.config/opencode" "opencode:.opencode" "gemini:.gemini" "codex:.codex" )
 
 # PREFERRED_RUNTIME should be set from execution_context before running this block.
 # If not set, infer from runtime env vars; fallback to claude.
@@ -146,14 +146,14 @@ Proceed to install step (treat as version 0.0.0 for comparison).
 Check npm for latest version:
 
 ```bash
-npm view get-shit-done-cc version 2>/dev/null
+npm view gsd-qwen version 2>/dev/null
 ```
 
 **If npm check fails:**
 ```
 Couldn't check for updates (offline or npm unavailable).
 
-To update manually: `npx get-shit-done-cc --global`
+To update manually: `npx gsd-qwen --global`
 ```
 
 Exit.
@@ -221,8 +221,8 @@ Exit.
 - `agents/gsd-*` files will be replaced
 
 (Paths are relative to detected runtime install location:
-global: `~/.claude/`, `~/.config/opencode/`, `~/.opencode/`, `~/.gemini/`, or `~/.codex/`
-local: `./.claude/`, `./.config/opencode/`, `./.opencode/`, `./.gemini/`, or `./.codex/`)
+global: `~/.qwen/`, `~/.config/opencode/`, `~/.opencode/`, `~/.gemini/`, or `~/.codex/`
+local: `./.qwen/`, `./.config/opencode/`, `./.opencode/`, `./.gemini/`, or `./.codex/`)
 
 Your custom files in other locations are preserved:
 - Custom commands not in `commands/gsd/` ✓
@@ -230,10 +230,10 @@ Your custom files in other locations are preserved:
 - Custom hooks ✓
 - Your CLAUDE.md files ✓
 
-If you've modified any GSD files directly, they'll be automatically backed up to `gsd-local-patches/` and can be reapplied with `/gsd:reapply-patches` after the update.
+If you've modified any GSD files directly, they'll be automatically backed up to `gsd-local-patches/` and can be reapplied with `$gsd-reapply-patches` after the update.
 ```
 
-Use AskUserQuestion:
+Use ask_user_question:
 - Question: "Proceed with update?"
 - Options:
   - "Yes, update now"
@@ -252,17 +252,17 @@ RUNTIME_FLAG="--$TARGET_RUNTIME"
 
 **If LOCAL install:**
 ```bash
-npx -y get-shit-done-cc@latest "$RUNTIME_FLAG" --local
+npx -y gsd-qwen@latest "$RUNTIME_FLAG" --local
 ```
 
 **If GLOBAL install:**
 ```bash
-npx -y get-shit-done-cc@latest "$RUNTIME_FLAG" --global
+npx -y gsd-qwen@latest "$RUNTIME_FLAG" --global
 ```
 
 **If UNKNOWN install:**
 ```bash
-npx -y get-shit-done-cc@latest --claude --global
+npx -y gsd-qwen@latest --claude --global
 ```
 
 Capture output. If install fails, show error and exit.
@@ -271,7 +271,7 @@ Clear the update cache so statusline indicator disappears:
 
 ```bash
 # Clear update cache across all runtime directories
-for dir in .claude .config/opencode .opencode .gemini .codex; do
+for dir in .qwen .config/opencode .opencode .gemini .codex; do
   rm -f "./$dir/cache/gsd-update-check.json"
   rm -f "$HOME/$dir/cache/gsd-update-check.json"
 done
@@ -304,7 +304,7 @@ Check for gsd-local-patches/backup-meta.json in the config directory.
 
 ```
 Local patches were backed up before the update.
-Run /gsd:reapply-patches to merge your modifications into the new version.
+Run $gsd-reapply-patches to merge your modifications into the new version.
 ```
 
 **If no patches:** Continue normally.

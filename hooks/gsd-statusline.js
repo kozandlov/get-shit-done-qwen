@@ -7,10 +7,10 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-// Read JSON from stdin
+// read_file JSON from stdin
 let input = '';
 // Timeout guard: if stdin doesn't close within 3s (e.g. pipe issues on
-// Windows/Git Bash), exit silently instead of hanging. See #775.
+// Windows/Git run_shell_command), exit silently instead of hanging. See #775.
 const stdinTimeout = setTimeout(() => process.exit(0), 3000);
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', chunk => input += chunk);
@@ -33,7 +33,7 @@ process.stdin.on('end', () => {
       const usableRemaining = Math.max(0, ((remaining - AUTO_COMPACT_BUFFER_PCT) / (100 - AUTO_COMPACT_BUFFER_PCT)) * 100);
       const used = Math.max(0, Math.min(100, Math.round(100 - usableRemaining)));
 
-      // Write context metrics to bridge file for the context-monitor PostToolUse hook.
+      // write_file context metrics to bridge file for the context-monitor PostToolUse hook.
       // The monitor reads this file to inject agent-facing warnings when context is low.
       if (session) {
         try {
@@ -70,7 +70,7 @@ process.stdin.on('end', () => {
     let task = '';
     const homeDir = os.homedir();
     // Respect CLAUDE_CONFIG_DIR for custom config directory setups (#870)
-    const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(homeDir, '.claude');
+    const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(homeDir, '.qwen');
     const todosDir = path.join(claudeDir, 'todos');
     if (session && fs.existsSync(todosDir)) {
       try {
@@ -98,10 +98,10 @@ process.stdin.on('end', () => {
       try {
         const cache = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
         if (cache.update_available) {
-          gsdUpdate = '\x1b[33m⬆ /gsd:update\x1b[0m │ ';
+          gsdUpdate = '\x1b[33m⬆ $gsd-update\x1b[0m │ ';
         }
         if (cache.stale_hooks && cache.stale_hooks.length > 0) {
-          gsdUpdate += '\x1b[31m⚠ stale hooks — run /gsd:update\x1b[0m │ ';
+          gsdUpdate += '\x1b[31m⚠ stale hooks — run $gsd-update\x1b[0m │ ';
         }
       } catch (e) {}
     }

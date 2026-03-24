@@ -1,6 +1,6 @@
 # 模型配置解析
 
-在编排开始时解析一次模型配置，然后在所有 Task 生成时使用。
+在编排开始时解析一次模型配置，然后在所有 task 生成时使用。
 
 ## 解析模式
 
@@ -12,12 +12,12 @@ MODEL_PROFILE=$(cat .planning/config.json 2>/dev/null | grep -o '"model_profile"
 
 ## 查找表
 
-@~/.claude/get-shit-done/references/model-profiles.md
+@~/.qwen/get-shit-done/references/model-profiles.md
 
-在表中查找已解析配置对应的代理。将 model 参数传递给 Task 调用：
+在表中查找已解析配置对应的代理。将 model 参数传递给 task 调用：
 
 ```
-Task(
+task(
   prompt="...",
   subagent_type="gsd-planner",
   model="{resolved_model}"  # "inherit"、"sonnet" 或 "haiku"
@@ -31,4 +31,4 @@ Task(
 1. 在编排开始时解析一次
 2. 存储 profile 值
 3. 生成时在表中查找每个代理的模型
-4. 将 model 参数传递给每个 Task 调用（值：`"inherit"`、`"sonnet"`、`"haiku"`）
+4. 将 model 参数传递给每个 task 调用（值：`"inherit"`、`"sonnet"`、`"haiku"`）

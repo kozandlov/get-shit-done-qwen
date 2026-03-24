@@ -1,15 +1,15 @@
 ---
-name: gsd:autonomous
+name: gsd-autonomous
 description: Run all remaining phases autonomously — discuss→plan→execute per phase
 argument-hint: "[--from N]"
 allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Glob
-  - Grep
-  - AskUserQuestion
-  - Task
+  - read_file
+  - write_file
+  - run_shell_command
+  - glob
+  - grep_search
+  - ask_user_question
+  - task
 ---
 <objective>
 Execute all remaining milestone phases autonomously. For each phase: discuss → plan → execute. Pauses only for user decisions (grey area acceptance, blockers, validation requests).
@@ -25,8 +25,8 @@ Uses ROADMAP.md phase discovery and Skill() flat invocations for each phase comm
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/autonomous.md
-@~/.claude/get-shit-done/references/ui-brand.md
+@~/.qwen/get-shit-done/workflows/autonomous.md
+@~/.qwen/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -36,6 +36,25 @@ Project context, phase list, and state are resolved inside the workflow using in
 </context>
 
 <process>
-Execute the autonomous workflow from @~/.claude/get-shit-done/workflows/autonomous.md end-to-end.
+Execute the autonomous workflow from @~/.qwen/get-shit-done/workflows/autonomous.md end-to-end.
 Preserve all workflow gates (phase discovery, per-phase execution, blocker handling, progress display).
 </process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-autonomous ~/.qwen/skills/gsd-autonomous
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-autonomous .qwen/skills/gsd-autonomous
+```
+
+**Usage:**
+```bash
+$gsd-autonomous
+```

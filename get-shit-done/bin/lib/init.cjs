@@ -245,7 +245,7 @@ function cmdInitNewProject(cwd, raw) {
   let hasPackageFile = false;
   try {
     const codeExtensions = new Set(['.ts', '.js', '.py', '.go', '.rs', '.swift', '.java']);
-    const skipDirs = new Set(['node_modules', '.git', '.planning', '.claude', '__pycache__', 'target', 'dist', 'build']);
+    const skipDirs = new Set(['node_modules', '.git', '.planning', '.qwen', '__pycache__', 'target', 'dist', 'build']);
     function findCodeFiles(dir, depth) {
       if (depth > 3) return false;
       let entries;

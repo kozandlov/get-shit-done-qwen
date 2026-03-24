@@ -1,11 +1,11 @@
 ---
-name: gsd:resume-work
+name: gsd-resume-work
 description: Resume work from previous session with full context restoration
 allowed-tools:
-  - Read
-  - Bash
-  - Write
-  - AskUserQuestion
+  - read_file
+  - run_shell_command
+  - write_file
+  - ask_user_question
   - SlashCommand
 ---
 
@@ -22,11 +22,11 @@ Routes to the resume-project workflow which handles:
   </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/resume-project.md
+@~/.qwen/get-shit-done/workflows/resume-project.md
 </execution_context>
 
 <process>
-**Follow the resume-project workflow** from `@~/.claude/get-shit-done/workflows/resume-project.md`.
+**Follow the resume-project workflow** from `@~/.qwen/get-shit-done/workflows/resume-project.md`.
 
 The workflow handles all resumption logic including:
 
@@ -38,3 +38,22 @@ The workflow handles all resumption logic including:
 6. Routing to appropriate next command
 7. Session continuity updates
    </process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-resume-work ~/.qwen/skills/gsd-resume-work
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-resume-work .qwen/skills/gsd-resume-work
+```
+
+**Usage:**
+```bash
+$gsd-resume-work
+```

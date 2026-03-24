@@ -1,6 +1,6 @@
 ---
 description: Reapply local modifications after a GSD update
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion
+allowed-tools: read_file, write_file, edit, run_shell_command, glob, grep_search, ask_user_question
 ---
 
 <purpose>
@@ -22,11 +22,11 @@ elif [ -d "$HOME/.opencode/gsd-local-patches" ]; then
 elif [ -d "$HOME/.gemini/gsd-local-patches" ]; then
   PATCHES_DIR="$HOME/.gemini/gsd-local-patches"
 else
-  PATCHES_DIR="$HOME/.claude/gsd-local-patches"
+  PATCHES_DIR="$HOME/.qwen/gsd-local-patches"
 fi
 # Local install fallback — check all runtime directories
 if [ ! -d "$PATCHES_DIR" ]; then
-  for dir in .config/opencode .opencode .gemini .claude; do
+  for dir in .config/opencode .opencode .gemini .qwen; do
     if [ -d "./$dir/gsd-local-patches" ]; then
       PATCHES_DIR="./$dir/gsd-local-patches"
       break
@@ -35,13 +35,13 @@ if [ ! -d "$PATCHES_DIR" ]; then
 fi
 ```
 
-Read `backup-meta.json` from the patches directory.
+read_file `backup-meta.json` from the patches directory.
 
 **If no patches found:**
 ```
 No local patches found. Nothing to reapply.
 
-Local patches are automatically saved when you run /gsd:update
+Local patches are automatically saved when you run $gsd-update
 after modifying any GSD workflow, command, or agent files.
 ```
 Exit.
@@ -65,20 +65,20 @@ Exit.
 
 For each file in `backup-meta.json`:
 
-1. **Read the backed-up version** (user's modified copy from `gsd-local-patches/`)
-2. **Read the newly installed version** (current file after update)
+1. **read_file the backed-up version** (user's modified copy from `gsd-local-patches/`)
+2. **read_file the newly installed version** (current file after update)
 3. **Compare and merge:**
 
    - If the new file is identical to the backed-up file: skip (modification was incorporated upstream)
    - If the new file differs: identify the user's modifications and apply them to the new version
 
    **Merge strategy:**
-   - Read both versions fully
+   - read_file both versions fully
    - Identify sections the user added or modified (look for additions, not just differences from path replacement)
    - Apply user's additions/modifications to the new version
    - If a section the user modified was also changed upstream: flag as conflict, show both versions, ask user which to keep
 
-4. **Write merged result** to the installed location
+4. **write_file merged result** to the installed location
 5. **Report status:**
    - `Merged` — user modifications applied cleanly
    - `Skipped` — modification already in upstream
@@ -89,7 +89,7 @@ For each file in `backup-meta.json`:
 After reapplying, regenerate the file manifest so future updates correctly detect these as user modifications:
 
 ```bash
-# The manifest will be regenerated on next /gsd:update
+# The manifest will be regenerated on next $gsd-update
 # For now, just note which files were modified
 ```
 
@@ -121,3 +121,22 @@ Ask user:
 - [ ] Conflicts resolved with user input
 - [ ] Status reported for each file
 </success_criteria>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-reapply-patches ~/.qwen/skills/gsd-reapply-patches
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-reapply-patches .qwen/skills/gsd-reapply-patches
+```
+
+**Usage:**
+```bash
+$gsd-reapply-patches
+```

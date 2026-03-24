@@ -11,7 +11,7 @@ Flags are composable: `--discuss --research --full` gives discussion + research 
 </purpose>
 
 <required_reading>
-Read all files referenced by the invoking prompt's execution_context before starting.
+read_file all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
 <process>
@@ -26,8 +26,8 @@ Parse `$ARGUMENTS` for:
 If `$DESCRIPTION` is empty after parsing, prompt user interactively:
 
 ```
-AskUserQuestion(
-  header: "Quick Task",
+ask_user_question(
+  header: "Quick task",
   question: "What do you want to do?",
   followUp: null
 )
@@ -107,13 +107,13 @@ If `$FULL_MODE` only:
 **Step 2: Initialize**
 
 ```bash
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init quick "$DESCRIPTION")
+INIT=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" init quick "$DESCRIPTION")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Parse JSON for: `planner_model`, `executor_model`, `checker_model`, `verifier_model`, `commit_docs`, `branch_name`, `quick_id`, `slug`, `date`, `timestamp`, `quick_dir`, `task_dir`, `roadmap_exists`, `planning_exists`.
 
-**If `roadmap_exists` is false:** Error — Quick mode requires an active project with ROADMAP.md. Run `/gsd:new-project` first.
+**If `roadmap_exists` is false:** Error — Quick mode requires an active project with ROADMAP.md. Run `$gsd-new-project` first.
 
 Quick tasks can run mid-phase - validation only checks ROADMAP.md exists, not phase status.
 
@@ -189,7 +189,7 @@ Each gray area should be a concrete decision point, not a vague category. Exampl
 **4.5b. Present gray areas**
 
 ```
-AskUserQuestion(
+ask_user_question(
   header: "Gray Areas",
   question: "Which areas need clarification before planning?",
   options: [
@@ -206,10 +206,10 @@ If user selects "All clear" → skip to Step 5 (no CONTEXT.md written).
 
 **4.5c. Discuss selected areas**
 
-For each selected area, ask 1-2 focused questions via AskUserQuestion:
+For each selected area, ask 1-2 focused questions via ask_user_question:
 
 ```
-AskUserQuestion(
+ask_user_question(
   header: "${area_name}",
   question: "${specific_question_about_this_area}",
   options: [
@@ -231,18 +231,18 @@ Rules:
 
 Collect all decisions into `$DECISIONS`.
 
-**4.5d. Write CONTEXT.md**
+**4.5d. write_file CONTEXT.md**
 
-Write `${QUICK_DIR}/${quick_id}-CONTEXT.md` using the standard context template structure:
+write_file `${QUICK_DIR}/${quick_id}-CONTEXT.md` using the standard context template structure:
 
 ```markdown
-# Quick Task ${quick_id}: ${DESCRIPTION} - Context
+# Quick task ${quick_id}: ${DESCRIPTION} - Context
 
 **Gathered:** ${date}
 **Status:** Ready for planning
 
 <domain>
-## Task Boundary
+## task Boundary
 
 ${DESCRIPTION}
 
@@ -303,12 +303,12 @@ Display banner:
 Spawn a single focused researcher (not 4 parallel researchers like full phases — quick tasks need targeted research, not broad domain surveys):
 
 ```
-Task(
+task(
   prompt="
 <research_context>
 
 **Mode:** quick-task
-**Task:** ${DESCRIPTION}
+**task:** ${DESCRIPTION}
 **Output:** ${QUICK_DIR}/${quick_id}-RESEARCH.md
 
 <files_to_read>
@@ -331,7 +331,7 @@ Do NOT produce a full domain survey. Target 1-2 pages of actionable findings.
 </focus>
 
 <output>
-Write research to: ${QUICK_DIR}/${quick_id}-RESEARCH.md
+write_file research to: ${QUICK_DIR}/${quick_id}-RESEARCH.md
 Use standard research format but keep it lean — skip sections that don't apply.
 Return: ## RESEARCH COMPLETE with file path
 </output>
@@ -357,7 +357,7 @@ If research file not found, warn but continue: "Research agent did not produce o
 **If NOT `$FULL_MODE`:** Use standard `quick` mode.
 
 ```
-Task(
+task(
   prompt="
 <planning_context>
 
@@ -372,7 +372,7 @@ ${DISCUSS_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-CONTEXT.md (User decision
 ${RESEARCH_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-RESEARCH.md (Research findings — use to inform implementation choices)' : ''}
 </files_to_read>
 
-**Project skills:** Check .claude/skills/ or .agents/skills/ directory (if either exists) — read SKILL.md files, plans should account for project skill rules
+**Project skills:** Check .qwen/skills/ or .agents/skills/ directory (if either exists) — read SKILL.md files, plans should account for project skill rules
 
 </planning_context>
 
@@ -386,7 +386,7 @@ ${FULL_MODE ? '- Each task MUST have `files`, `action`, `verify`, `done` fields'
 </constraints>
 
 <output>
-Write plan to: ${QUICK_DIR}/${quick_id}-PLAN.md
+write_file plan to: ${QUICK_DIR}/${quick_id}-PLAN.md
 Return: ## PLANNING COMPLETE with plan path
 </output>
 ",
@@ -423,7 +423,7 @@ Checker prompt:
 ```markdown
 <verification_context>
 **Mode:** quick-full
-**Task Description:** ${DESCRIPTION}
+**task Description:** ${DESCRIPTION}
 
 <files_to_read>
 - ${QUICK_DIR}/${quick_id}-PLAN.md (Plan to verify)
@@ -434,7 +434,7 @@ Checker prompt:
 
 <check_dimensions>
 - Requirement coverage: Does the plan address the task description?
-- Task completeness: Do tasks have files, action, verify, done fields?
+- task completeness: Do tasks have files, action, verify, done fields?
 - Key links: Are referenced files real?
 - Scope sanity: Is this appropriately sized for a quick task (1-3 tasks)?
 - must_haves derivation: Are must_haves traceable to the task description?
@@ -450,7 +450,7 @@ ${DISCUSS_MODE ? '- Context compliance: Does the plan honor locked decisions fro
 ```
 
 ```
-Task(
+task(
   prompt=checker_prompt,
   subagent_type="gsd-plan-checker",
   model="{checker_model}",
@@ -493,7 +493,7 @@ Return what changed.
 ```
 
 ```
-Task(
+task(
   prompt=revision_prompt,
   subagent_type="gsd-planner",
   model="{planner_model}",
@@ -516,7 +516,7 @@ Offer: 1) Force proceed, 2) Abort
 Spawn gsd-executor with plan reference:
 
 ```
-Task(
+task(
   prompt="
 Execute quick task ${quick_id}.
 
@@ -524,7 +524,7 @@ Execute quick task ${quick_id}.
 - ${QUICK_DIR}/${quick_id}-PLAN.md (Plan)
 - .planning/STATE.md (Project state)
 - ./CLAUDE.md (Project instructions, if exists)
-- .claude/skills/ or .agents/skills/ (Project skills, if either exists — list skills, read SKILL.md for each, follow relevant rules during implementation)
+- .qwen/skills/ or .agents/skills/ (Project skills, if either exists — list skills, read SKILL.md for each, follow relevant rules during implementation)
 </files_to_read>
 
 <constraints>
@@ -567,10 +567,10 @@ Display banner:
 ```
 
 ```
-Task(
+task(
   prompt="Verify quick task goal achievement.
-Task directory: ${QUICK_DIR}
-Task goal: ${DESCRIPTION}
+task directory: ${QUICK_DIR}
+task goal: ${DESCRIPTION}
 
 <files_to_read>
 - ${QUICK_DIR}/${quick_id}-PLAN.md (Plan)
@@ -583,7 +583,7 @@ Check must_haves against actual codebase. Create VERIFICATION.md at ${QUICK_DIR}
 )
 ```
 
-Read verification status:
+read_file verification status:
 ```bash
 grep "^status:" "${QUICK_DIR}/${quick_id}-VERIFICATION.md" | cut -d: -f2 | tr -d ' '
 ```
@@ -604,7 +604,7 @@ Update STATE.md with quick task completion record.
 
 **7a. Check if "Quick Tasks Completed" section exists:**
 
-Read STATE.md and check for `### Quick Tasks Completed` section.
+read_file STATE.md and check for `### Quick Tasks Completed` section.
 
 **7b. If section doesn't exist, create it:**
 
@@ -649,7 +649,7 @@ Use `date` from init:
 Last activity: ${date} - Completed quick task ${quick_id}: ${DESCRIPTION}
 ```
 
-Use Edit tool to make these changes atomically
+Use edit tool to make these changes atomically
 
 ---
 
@@ -666,7 +666,7 @@ Build file list:
 - If `$FULL_MODE` and verification file exists: `${QUICK_DIR}/${quick_id}-VERIFICATION.md`
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs(quick-${quick_id}): ${DESCRIPTION}" --files ${file_list}
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs(quick-${quick_id}): ${DESCRIPTION}" --files ${file_list}
 ```
 
 Get final commit hash:
@@ -682,7 +682,7 @@ Display completion output:
 
 GSD > QUICK TASK COMPLETE (FULL MODE)
 
-Quick Task ${quick_id}: ${DESCRIPTION}
+Quick task ${quick_id}: ${DESCRIPTION}
 
 ${RESEARCH_MODE ? 'Research: ' + QUICK_DIR + '/' + quick_id + '-RESEARCH.md' : ''}
 Summary: ${QUICK_DIR}/${quick_id}-SUMMARY.md
@@ -691,7 +691,7 @@ Commit: ${commit_hash}
 
 ---
 
-Ready for next task: /gsd:quick
+Ready for next task: $gsd-quick
 ```
 
 **If NOT `$FULL_MODE`:**
@@ -700,7 +700,7 @@ Ready for next task: /gsd:quick
 
 GSD > QUICK TASK COMPLETE
 
-Quick Task ${quick_id}: ${DESCRIPTION}
+Quick task ${quick_id}: ${DESCRIPTION}
 
 ${RESEARCH_MODE ? 'Research: ' + QUICK_DIR + '/' + quick_id + '-RESEARCH.md' : ''}
 Summary: ${QUICK_DIR}/${quick_id}-SUMMARY.md
@@ -708,7 +708,7 @@ Commit: ${commit_hash}
 
 ---
 
-Ready for next task: /gsd:quick
+Ready for next task: $gsd-quick
 ```
 
 </process>

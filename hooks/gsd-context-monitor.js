@@ -29,7 +29,7 @@ const DEBOUNCE_CALLS = 5;      // min tool uses between warnings
 
 let input = '';
 // Timeout guard: if stdin doesn't close within 10s (e.g. pipe issues on
-// Windows/Git Bash, or slow Claude Code piping during large outputs),
+// Windows/Git run_shell_command, or slow Claude Code piping during large outputs),
 // exit silently instead of hanging until Claude Code kills the process
 // and reports "hook error". See #775, #1162.
 const stdinTimeout = setTimeout(() => process.exit(0), 10000);
@@ -127,7 +127,7 @@ process.stdin.on('end', () => {
         ? `CONTEXT CRITICAL: Usage at ${usedPct}%. Remaining: ${remaining}%. ` +
           'Context is nearly exhausted. Do NOT start new complex work or write handoff files — ' +
           'GSD state is already tracked in STATE.md. Inform the user so they can run ' +
-          '/gsd:pause-work at the next natural stopping point.'
+          '$gsd-pause-work at the next natural stopping point.'
         : `CONTEXT CRITICAL: Usage at ${usedPct}%. Remaining: ${remaining}%. ` +
           'Context is nearly exhausted. Inform the user that context is low and ask how they ' +
           'want to proceed. Do NOT autonomously save state or write handoff files unless the user asks.';

@@ -1,12 +1,12 @@
 ---
-name: gsd:add-todo
+name: gsd-add-todo
 description: Capture idea or task as todo from current conversation context
 argument-hint: [optional description]
 allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - AskUserQuestion
+  - read_file
+  - write_file
+  - run_shell_command
+  - ask_user_question
 ---
 
 <objective>
@@ -23,7 +23,7 @@ Routes to the add-todo workflow which handles:
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/add-todo.md
+@~/.qwen/get-shit-done/workflows/add-todo.md
 </execution_context>
 
 <context>
@@ -33,7 +33,7 @@ State is resolved in-workflow via `init todos` and targeted reads.
 </context>
 
 <process>
-**Follow the add-todo workflow** from `@~/.claude/get-shit-done/workflows/add-todo.md`.
+**Follow the add-todo workflow** from `@~/.qwen/get-shit-done/workflows/add-todo.md`.
 
 The workflow handles all logic including:
 1. Directory ensuring
@@ -45,3 +45,22 @@ The workflow handles all logic including:
 7. STATE.md updates
 8. Git commits
 </process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-add-todo ~/.qwen/skills/gsd-add-todo
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-add-todo .qwen/skills/gsd-add-todo
+```
+
+**Usage:**
+```bash
+$gsd-add-todo
+```

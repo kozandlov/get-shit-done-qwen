@@ -71,7 +71,7 @@ Gray areas are **implementation decisions the user cares about** — things that
 
 **How to identify gray areas:**
 
-1. **Read the phase goal** from ROADMAP.md
+1. **read_file the phase goal** from ROADMAP.md
 2. **Understand the domain** — What kind of thing is being built?
    - Something users SEE → visual presentation, interactions, states matter
    - Something users CALL → interface contracts, responses, errors matter
@@ -106,19 +106,19 @@ Phase: "API documentation"
 </gray_area_identification>
 
 <answer_validation>
-**IMPORTANT: Answer validation** — After every AskUserQuestion call, check if the response is empty or whitespace-only. If so:
+**IMPORTANT: Answer validation** — After every ask_user_question call, check if the response is empty or whitespace-only. If so:
 1. Retry the question once with the same parameters
 2. If still empty, present the options as a plain-text numbered list and ask the user to type their choice number
 Never proceed with an empty answer.
 
 **Text mode (`workflow.text_mode: true` in config or `--text` flag):**
-When text mode is active, **do not use AskUserQuestion at all**. Instead, present every
+When text mode is active, **do not use ask_user_question at all**. Instead, present every
 question as a plain-text numbered list and ask the user to type their choice number.
 This is required for Claude Code remote sessions (`/rc` mode) where the Claude App
 cannot forward TUI menu selections back to the host.
 
 Enable text mode:
-- Per-session: pass `--text` flag to any command (e.g., `/gsd:discuss-phase --text`)
+- Per-session: pass `--text` flag to any command (e.g., `$gsd-discuss-phase --text`)
 - Per-project: `gsd-tools config-set workflow.text_mode true`
 
 Text mode applies to ALL workflows in the session, not just discuss-phase.
@@ -126,13 +126,13 @@ Text mode applies to ALL workflows in the session, not just discuss-phase.
 
 <process>
 
-**Express path available:** If you already have a PRD or acceptance criteria document, use `/gsd:plan-phase {phase} --prd path/to/prd.md` to skip this discussion and go straight to planning.
+**Express path available:** If you already have a PRD or acceptance criteria document, use `$gsd-plan-phase {phase} --prd path/to/prd.md` to skip this discussion and go straight to planning.
 
 <step name="initialize" priority="first">
 Phase number from argument (required).
 
 ```bash
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op "${PHASE}")
+INIT=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" init phase-op "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -142,7 +142,7 @@ Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phas
 ```
 Phase [X] not found in roadmap.
 
-Use /gsd:progress to see available phases.
+Use $gsd-progress to see available phases.
 ```
 Exit workflow.
 
@@ -151,7 +151,7 @@ Exit workflow.
 **Auto mode** — If `--auto` is present in ARGUMENTS:
 - In `check_existing`: auto-select "Skip" (if context exists) or continue without prompting (if no context/plans)
 - In `present_gray_areas`: auto-select ALL gray areas without asking the user
-- In `discuss_areas`: for each discussion question, choose the recommended option (first option, or the one marked "recommended") without using AskUserQuestion
+- In `discuss_areas`: for each discussion question, choose the recommended option (first option, or the one marked "recommended") without using ask_user_question
 - Log each auto-selected choice inline so the user can review decisions in the context file
 - After discussion completes, auto-advance to plan-phase (existing behavior)
 </step>
@@ -167,7 +167,7 @@ ls ${phase_dir}/*-CONTEXT.md 2>/dev/null
 
 **If `--auto`:** Auto-select "Update it" — load existing context and continue to analyze_phase. Log: `[auto] Context exists — updating with auto-selected decisions.`
 
-**Otherwise:** Use AskUserQuestion:
+**Otherwise:** Use ask_user_question:
 - header: "Context"
 - question: "Phase [X] already has context. What do you want to do?"
 - options:
@@ -185,11 +185,11 @@ Check `has_plans` and `plan_count` from init. **If `has_plans` is true:**
 
 **If `--auto`:** Auto-select "Continue and replan after". Log: `[auto] Plans exist — continuing with context capture, will replan after.`
 
-**Otherwise:** Use AskUserQuestion:
+**Otherwise:** Use ask_user_question:
 - header: "Plans exist"
 - question: "Phase [X] already has {plan_count} plan(s) created without user context. Your decisions here won't affect existing plans unless you replan."
 - options:
-  - "Continue and replan after" — Capture context, then run /gsd:plan-phase {X} to replan
+  - "Continue and replan after" — Capture context, then run $gsd-plan-phase {X} to replan
   - "View existing plans" — Show plans before deciding
   - "Cancel" — Skip discuss-phase
 
@@ -201,9 +201,9 @@ If "Cancel": Exit workflow.
 </step>
 
 <step name="load_prior_context">
-Read project-level and prior phase context to avoid re-asking decided questions and maintain consistency.
+read_file project-level and prior phase context to avoid re-asking decided questions and maintain consistency.
 
-**Step 1: Read project-level files**
+**Step 1: read_file project-level files**
 ```bash
 # Core project files
 cat .planning/PROJECT.md 2>/dev/null
@@ -216,15 +216,15 @@ Extract from these:
 - **REQUIREMENTS.md** — Acceptance criteria, constraints, must-haves vs nice-to-haves
 - **STATE.md** — Current progress, any flags or session notes
 
-**Step 2: Read all prior CONTEXT.md files**
+**Step 2: read_file all prior CONTEXT.md files**
 ```bash
 # Find all CONTEXT.md files from phases before current
 find .planning/phases -name "*-CONTEXT.md" 2>/dev/null | sort
 ```
 
 For each CONTEXT.md where phase number < current phase:
-- Read the `<decisions>` section — these are locked preferences
-- Read `<specifics>` — particular references or "I want it like X" moments
+- read_file the `<decisions>` section — these are locked preferences
+- read_file `<specifics>` — particular references or "I want it like X" moments
 - Note any patterns (e.g., "user consistently prefers minimal UI", "user rejected single-key shortcuts")
 
 **Step 3: Build internal `<prior_decisions>` context**
@@ -259,7 +259,7 @@ Check if any pending todos are relevant to this phase's scope. Surfaces backlog 
 
 **Load and match todos:**
 ```bash
-TODO_MATCHES=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" todo match-phase "${PHASE_NUMBER}")
+TODO_MATCHES=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" todo match-phase "${PHASE_NUMBER}")
 ```
 
 Parse JSON for: `todo_count`, `matches[]` (each with `file`, `title`, `area`, `score`, `reasons`).
@@ -277,7 +277,7 @@ Present matched todos to the user. Show each match with its title, area, and why
 - **{title}** (area: {area}, relevance: {score}) — matched on {reasons}
 ```
 
-Use AskUserQuestion (multiSelect) asking which todos to fold into this phase's scope:
+Use ask_user_question (multiSelect) asking which todos to fold into this phase's scope:
 
 ```
 Which of these todos should be folded into Phase {X} scope?
@@ -303,7 +303,7 @@ Lightweight scan of existing code to inform gray area identification and discuss
 ls .planning/codebase/*.md 2>/dev/null
 ```
 
-**If codebase maps exist:** Read the most relevant ones (CONVENTIONS.md, STRUCTURE.md, STACK.md based on phase type). Extract:
+**If codebase maps exist:** read_file the most relevant ones (CONVENTIONS.md, STRUCTURE.md, STACK.md based on phase type). Extract:
 - Reusable components/hooks/utilities
 - Established patterns (state management, styling, data fetching)
 - Integration points (where new code would connect)
@@ -324,7 +324,7 @@ ls src/hooks/ 2>/dev/null
 ls src/lib/ src/utils/ 2>/dev/null
 ```
 
-Read the 3-5 most relevant files to understand existing patterns.
+read_file the 3-5 most relevant files to understand existing patterns.
 
 **Step 3: Build internal codebase_context**
 
@@ -340,7 +340,7 @@ Store as internal `<codebase_context>` for use in analyze_phase and present_gray
 <step name="analyze_phase">
 Analyze the phase to identify gray areas worth discussing. **Use both `prior_decisions` and `codebase_context` to ground the analysis.**
 
-**Read the phase description from ROADMAP.md and determine:**
+**read_file the phase description from ROADMAP.md and determine:**
 
 1. **Domain boundary** — What capability is this phase delivering? State it clearly.
 
@@ -368,13 +368,13 @@ Check if advisor mode should activate:
 
 1. Check for USER-PROFILE.md:
    ```bash
-   PROFILE_PATH="$HOME/.claude/get-shit-done/USER-PROFILE.md"
+   PROFILE_PATH="$HOME/.qwen/get-shit-done/USER-PROFILE.md"
    ```
    ADVISOR_MODE = file exists at PROFILE_PATH → true, otherwise → false
 
 2. If ADVISOR_MODE is true, resolve vendor_philosophy calibration tier:
-   - Priority 1: Read config.json > preferences.vendor_philosophy (project-level override)
-   - Priority 2: Read USER-PROFILE.md Vendor Choices/Philosophy rating (global)
+   - Priority 1: read_file config.json > preferences.vendor_philosophy (project-level override)
+   - Priority 2: read_file USER-PROFILE.md Vendor Choices/Philosophy rating (global)
    - Priority 3: Default to "standard" if neither has a value or value is UNSCORED
 
    Map to calibration tier:
@@ -384,7 +384,7 @@ Check if advisor mode should activate:
 
 3. Resolve model for advisor agents:
    ```bash
-   ADVISOR_MODEL=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" resolve-model gsd-advisor-researcher --raw)
+   ADVISOR_MODEL=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" resolve-model gsd-advisor-researcher --raw)
    ```
 
 If ADVISOR_MODE is false, skip all advisor-specific steps — workflow proceeds with existing conversational flow unchanged.
@@ -422,9 +422,9 @@ We'll clarify HOW to implement this.
 - [Decision from Phase M that applies here]
 ```
 
-**If `--auto`:** Auto-select ALL gray areas. Log: `[auto] Selected all gray areas: [list area names].` Skip the AskUserQuestion below and continue directly to discuss_areas with all areas selected.
+**If `--auto`:** Auto-select ALL gray areas. Log: `[auto] Selected all gray areas: [list area names].` Skip the ask_user_question below and continue directly to discuss_areas with all areas selected.
 
-**Otherwise, use AskUserQuestion (multiSelect: true):**
+**Otherwise, use ask_user_question (multiSelect: true):**
 - header: "Discuss"
 - question: "Which areas do you want to discuss for [phase name]?"
 - options: Generate 3-4 phase-specific gray areas, each with:
@@ -488,10 +488,10 @@ After user selects gray areas in present_gray_areas, spawn parallel research age
 
 1. Display brief status: "Researching {N} areas..."
 
-2. For EACH user-selected gray area, spawn a Task() in parallel:
+2. For EACH user-selected gray area, spawn a task() in parallel:
 
-   Task(
-     prompt="First, read @~/.claude/agents/gsd-advisor-researcher.md for your role and instructions.
+   task(
+     prompt="First, read @~/.qwen/agents/gsd-advisor-researcher.md for your role and instructions.
 
      <gray_area>{area_name}: {area_description from gray area identification}</gray_area>
      <phase_context>{phase_goal and description from ROADMAP.md}</phase_context>
@@ -504,7 +504,7 @@ After user selects gray areas in present_gray_areas, spawn parallel research age
      description="Research: {area_name}"
    )
 
-   All Task() calls spawn simultaneously — do NOT wait for one before starting the next.
+   All task() calls spawn simultaneously — do NOT wait for one before starting the next.
 
 3. After ALL agents return, SYNTHESIZE results before presenting:
    For each agent's return:
@@ -534,17 +534,17 @@ Table-first discussion flow — present research-backed comparison tables, then 
 
 1. **Present the synthesized comparison table + rationale paragraph** (from advisor_research step)
 
-2. **Use AskUserQuestion:**
+2. **Use ask_user_question:**
    - header: "{area_name}"
    - question: "Which approach for {area_name}?"
-   - options: Extract from the table's Option column (AskUserQuestion adds "Other" automatically)
+   - options: Extract from the table's Option column (ask_user_question adds "Other" automatically)
 
 3. **Record the user's selection:**
    - If user picks from table options → record as locked decision for that area
    - If user picks "Other" → receive their input, reflect it back for confirmation, record
 
 4. **After recording pick, Claude decides whether follow-up questions are needed:**
-   - If the pick has ambiguity that would affect downstream planning → ask 1-2 targeted follow-up questions using AskUserQuestion
+   - If the pick has ambiguity that would affect downstream planning → ask 1-2 targeted follow-up questions using ask_user_question
    - If the pick is clear and self-contained → move to next area
    - Do NOT ask the standard 4 questions — the table already provided the context
 
@@ -591,7 +591,7 @@ When disabled (default), skip the research and present questions directly as bef
 
 **Text mode support:** Parse optional `--text` from `$ARGUMENTS`.
 - Accept `--text` flag OR read `workflow.text_mode` from config (from init context)
-- When active, replace ALL `AskUserQuestion` calls with plain-text numbered lists
+- When active, replace ALL `ask_user_question` calls with plain-text numbered lists
 - User types a number to select, or types free text for "Other"
 - This is required for Claude Code remote sessions (`/rc` mode) where TUI menus
   don't work through the Claude App
@@ -632,7 +632,7 @@ This gives the user context to make informed decisions without extra prompting. 
 
 Each answer (or answer set, in batch mode) should reveal the next question or next batch.
 
-**Auto mode (`--auto`):** For each area, Claude selects the recommended option (first option, or the one explicitly marked "recommended") for every question without using AskUserQuestion. Log each auto-selected choice:
+**Auto mode (`--auto`):** For each area, Claude selects the recommended option (first option, or the one explicitly marked "recommended") for every question without using ask_user_question. Log each auto-selected choice:
 ```
 [auto] [Area] — Q: "[question text]" → Selected: "[chosen option]" (recommended default)
 ```
@@ -649,10 +649,10 @@ After all areas are auto-resolved, skip the "Explore more gray areas" prompt and
 
 2. **Ask questions using the selected pacing:**
 
-   **Default (no `--batch`): Ask 4 questions using AskUserQuestion**
+   **Default (no `--batch`): Ask 4 questions using ask_user_question**
    - header: "[Area]" (max 12 chars — abbreviate if needed)
    - question: Specific decision for this area
-   - options: 2-3 concrete choices (AskUserQuestion adds "Other" automatically), with the recommended choice highlighted and brief explanation why
+   - options: 2-3 concrete choices (ask_user_question adds "Other" automatically), with the recommended choice highlighted and brief explanation why
    - **Annotate options with code context** when relevant:
      ```
      "How should posts be displayed?"
@@ -666,7 +666,7 @@ After all areas are auto-resolved, skip the "Explore more gray areas" prompt and
    **Batch mode (`--batch`): Ask 2-5 numbered questions in one plain-text turn**
    - Group closely related questions for the current area into a single message
    - Keep each question concrete and answerable in one reply
-   - When options are helpful, include short inline choices per question rather than a separate AskUserQuestion for every item
+   - When options are helpful, include short inline choices per question rather than a separate ask_user_question for every item
    - After the user replies, reflect back the captured decisions, note any unanswered items, and ask only the minimum follow-up needed before moving on
    - Preserve adaptiveness between batches: use the full set of answers to decide the next batch or whether the area is sufficiently clear
 
@@ -683,7 +683,7 @@ After all areas are auto-resolved, skip the "Explore more gray areas" prompt and
 
 4. **After all initially-selected areas complete:**
    - Summarize what was captured from the discussion so far
-   - AskUserQuestion:
+   - ask_user_question:
      - header: "Done"
      - question: "We've discussed [list areas]. Which gray areas remain unclear?"
      - options: "Explore more gray areas" / "I'm ready for context"
@@ -695,7 +695,7 @@ After all areas are auto-resolved, skip the "Explore more gray areas" prompt and
 
 **Canonical ref accumulation during discussion:**
 When the user references a doc, spec, or ADR during any answer — e.g., "read adr-014", "check the MCP spec", "per browse-spec.md" — immediately:
-1. Read the referenced doc (or confirm it exists)
+1. read_file the referenced doc (or confirm it exists)
 2. Add it to the canonical refs accumulator with full relative path
 3. Use what you learned from the doc to inform subsequent questions
 
@@ -704,7 +704,7 @@ These user-referenced docs are often MORE important than ROADMAP.md refs because
 **Question design:**
 - Options should be concrete, not abstract ("Cards" not "Option A")
 - Each answer should inform the next question or next batch
-- If user picks "Other" to provide freeform input (e.g., "let me describe it", "something else", or an open-ended reply), ask your follow-up as plain text — NOT another AskUserQuestion. Wait for them to type at the normal prompt, then reflect their input back and confirm before resuming AskUserQuestion or the next numbered batch.
+- If user picks "Other" to provide freeform input (e.g., "let me describe it", "something else", or an open-ended reply), ask your follow-up as plain text — NOT another ask_user_question. Wait for them to type at the normal prompt, then reflect their input back and confirm before resuming ask_user_question or the next numbered batch.
 
 **Scope creep handling:**
 If user mentions something outside the phase domain:
@@ -784,7 +784,7 @@ If no todos were folded: omit this subsection entirely.]
 
 **Downstream agents MUST read these before planning or implementing.**
 
-[MANDATORY section. Write the FULL accumulated canonical refs list here.
+[MANDATORY section. write_file the FULL accumulated canonical refs list here.
 Sources: ROADMAP.md refs + REQUIREMENTS.md refs + user-referenced docs during
 discussion + any docs discovered during codebase scout. Group by topic area.
 Every entry needs a full relative path — not just a name.]
@@ -844,7 +844,7 @@ If no reviewed-but-deferred todos: omit this subsection entirely.]
 *Context gathered: [date]*
 ```
 
-Write file.
+write_file file.
 </step>
 
 <step name="confirm_creation">
@@ -871,15 +871,15 @@ Created: .planning/phases/${PADDED_PHASE}-${SLUG}/${PADDED_PHASE}-CONTEXT.md
 
 **Phase ${PHASE}: [Name]** — [Goal from ROADMAP.md]
 
-`/gsd:plan-phase ${PHASE}`
+`$gsd-plan-phase ${PHASE}`
 
 <sub>`/clear` first → fresh context window</sub>
 
 ---
 
 **Also available:**
-- `/gsd:plan-phase ${PHASE} --skip-research` — plan without research
-- `/gsd:ui-phase ${PHASE}` — generate UI design contract before planning (if phase has frontend work)
+- `$gsd-plan-phase ${PHASE} --skip-research` — plan without research
+- `$gsd-ui-phase ${PHASE}` — generate UI design contract before planning (if phase has frontend work)
 - Review/edit CONTEXT.md before continuing
 
 ---
@@ -887,7 +887,7 @@ Created: .planning/phases/${PADDED_PHASE}-${SLUG}/${PADDED_PHASE}-CONTEXT.md
 </step>
 
 <step name="git_commit">
-**Write DISCUSSION-LOG.md before committing:**
+**write_file DISCUSSION-LOG.md before committing:**
 
 **File location:** `${phase_dir}/${padded_phase}-DISCUSSION-LOG.md`
 
@@ -909,7 +909,7 @@ Created: .planning/phases/${PADDED_PHASE}-${SLUG}/${PADDED_PHASE}-CONTEXT.md
 
 | Option | Description | Selected |
 |--------|-------------|----------|
-| [Option 1] | [Description from AskUserQuestion] | |
+| [Option 1] | [Description from ask_user_question] | |
 | [Option 2] | [Description] | ✓ |
 | [Option 3] | [Description] | |
 
@@ -929,12 +929,12 @@ Created: .planning/phases/${PADDED_PHASE}-${SLUG}/${PADDED_PHASE}-CONTEXT.md
 [Ideas mentioned during discussion that were noted for future phases]
 ```
 
-Write file.
+write_file file.
 
 Commit phase context and discussion log:
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs(${padded_phase}): capture phase context" --files "${phase_dir}/${padded_phase}-CONTEXT.md" "${phase_dir}/${padded_phase}-DISCUSSION-LOG.md"
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs(${padded_phase}): capture phase context" --files "${phase_dir}/${padded_phase}-CONTEXT.md" "${phase_dir}/${padded_phase}-DISCUSSION-LOG.md"
 ```
 
 Confirm: "Committed: docs(${padded_phase}): capture phase context"
@@ -944,7 +944,7 @@ Confirm: "Committed: docs(${padded_phase}): capture phase context"
 Update STATE.md with session info:
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" state record-session \
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" state record-session \
   --stopped-at "Phase ${PHASE} context gathered" \
   --resume-file "${phase_dir}/${padded_phase}-CONTEXT.md"
 ```
@@ -952,7 +952,7 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" state record-session \
 Commit STATE.md:
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs(state): record phase ${PHASE} context session" --files .planning/STATE.md
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs(state): record phase ${PHASE} context session" --files .planning/STATE.md
 ```
 </step>
 
@@ -963,18 +963,18 @@ Check for auto-advance trigger:
 2. **Sync chain flag with intent** — if user invoked manually (no `--auto`), clear the ephemeral chain flag from any previous interrupted `--auto` chain. This does NOT touch `workflow.auto_advance` (the user's persistent settings preference):
    ```bash
    if [[ ! "$ARGUMENTS" =~ --auto ]]; then
-     node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-set workflow._auto_chain_active false 2>/dev/null
+     node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" config-set workflow._auto_chain_active false 2>/dev/null
    fi
    ```
-3. Read both the chain flag and user preference:
+3. read_file both the chain flag and user preference:
    ```bash
-   AUTO_CHAIN=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
-   AUTO_CFG=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
+   AUTO_CHAIN=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" config-get workflow._auto_chain_active 2>/dev/null || echo "false")
+   AUTO_CFG=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" config-get workflow.auto_advance 2>/dev/null || echo "false")
    ```
 
 **If `--auto` flag present AND `AUTO_CHAIN` is not true:** Persist chain flag to config (handles direct `--auto` usage without new-project):
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-set workflow._auto_chain_active true
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" config-set workflow._auto_chain_active true
 ```
 
 **If `--auto` flag present OR `AUTO_CHAIN` is true OR `AUTO_CFG` is true:**
@@ -988,12 +988,12 @@ Display banner:
 Context captured. Launching plan-phase...
 ```
 
-Launch plan-phase using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting — see #686):
+Launch plan-phase using the Skill tool to avoid nested task sessions (which cause runtime freezes due to deep agent nesting — see #686):
 ```
 Skill(skill="gsd:plan-phase", args="${PHASE} --auto")
 ```
 
-This keeps the auto-advance chain flat — discuss, plan, and execute all run at the same nesting level rather than spawning increasingly deep Task agents.
+This keeps the auto-advance chain flat — discuss, plan, and execute all run at the same nesting level rather than spawning increasingly deep task agents.
 
 **Handle plan-phase return:**
 - **PHASE COMPLETE** → Full chain succeeded. Display:
@@ -1004,23 +1004,23 @@ This keeps the auto-advance chain flat — discuss, plan, and execute all run at
 
   Auto-advance pipeline finished: discuss → plan → execute
 
-  Next: /gsd:discuss-phase ${NEXT_PHASE} --auto
+  Next: $gsd-discuss-phase ${NEXT_PHASE} --auto
   <sub>/clear first → fresh context window</sub>
   ```
 - **PLANNING COMPLETE** → Planning done, execution didn't complete:
   ```
   Auto-advance partial: Planning complete, execution did not finish.
-  Continue: /gsd:execute-phase ${PHASE}
+  Continue: $gsd-execute-phase ${PHASE}
   ```
 - **PLANNING INCONCLUSIVE / CHECKPOINT** → Stop chain:
   ```
   Auto-advance stopped: Planning needs input.
-  Continue: /gsd:plan-phase ${PHASE}
+  Continue: $gsd-plan-phase ${PHASE}
   ```
 - **GAPS FOUND** → Stop chain:
   ```
   Auto-advance stopped: Gaps found during execution.
-  Continue: /gsd:plan-phase ${PHASE} --gaps
+  Continue: $gsd-plan-phase ${PHASE} --gaps
   ```
 
 **If neither `--auto` nor config enabled:**

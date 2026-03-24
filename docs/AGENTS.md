@@ -33,9 +33,9 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:new-project`, `/gsd:new-milestone` |
+| **Spawned by** | `$gsd-new-project`, `$gsd-new-milestone` |
 | **Parallelism** | 4 instances (stack, features, architecture, pitfalls) |
-| **Tools** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
+| **Tools** | read_file, write_file, run_shell_command, grep_search, glob, web_search, web_fetch, mcp (context7) |
 | **Model (balanced)** | Sonnet |
 | **Produces** | `.planning/research/STACK.md`, `FEATURES.md`, `ARCHITECTURE.md`, `PITFALLS.md` |
 
@@ -52,9 +52,9 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:plan-phase` |
+| **Spawned by** | `$gsd-plan-phase` |
 | **Parallelism** | 4 instances (same focus areas as project researcher) |
-| **Tools** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
+| **Tools** | read_file, write_file, run_shell_command, grep_search, glob, web_search, web_fetch, mcp (context7) |
 | **Model (balanced)** | Sonnet |
 | **Produces** | `{phase}-RESEARCH.md` |
 
@@ -71,9 +71,9 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:ui-phase` |
+| **Spawned by** | `$gsd-ui-phase` |
 | **Parallelism** | Single instance |
-| **Tools** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
+| **Tools** | read_file, write_file, run_shell_command, grep_search, glob, web_search, web_fetch, mcp (context7) |
 | **Model (balanced)** | Sonnet |
 | **Color** | `#E879F9` (fuchsia) |
 | **Produces** | `{phase}-UI-SPEC.md` |
@@ -92,9 +92,9 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:new-project` (after 4 researchers complete) |
+| **Spawned by** | `$gsd-new-project` (after 4 researchers complete) |
 | **Parallelism** | Single instance (sequential after researchers) |
-| **Tools** | Read, Write, Bash |
+| **Tools** | read_file, write_file, run_shell_command |
 | **Model (balanced)** | Sonnet |
 | **Color** | Purple |
 | **Produces** | `.planning/research/SUMMARY.md` |
@@ -107,9 +107,9 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:plan-phase`, `/gsd:quick` |
+| **Spawned by** | `$gsd-plan-phase`, `$gsd-quick` |
 | **Parallelism** | Single instance |
-| **Tools** | Read, Write, Bash, Glob, Grep, WebFetch, mcp (context7) |
+| **Tools** | read_file, write_file, run_shell_command, glob, grep_search, web_fetch, mcp (context7) |
 | **Model (balanced)** | Opus |
 | **Color** | Green |
 | **Produces** | `{phase}-{N}-PLAN.md` files |
@@ -129,9 +129,9 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:new-project` |
+| **Spawned by** | `$gsd-new-project` |
 | **Parallelism** | Single instance |
-| **Tools** | Read, Write, Bash, Glob, Grep |
+| **Tools** | read_file, write_file, run_shell_command, glob, grep_search |
 | **Model (balanced)** | Sonnet |
 | **Color** | Purple |
 | **Produces** | `ROADMAP.md` |
@@ -150,9 +150,9 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:execute-phase`, `/gsd:quick` |
+| **Spawned by** | `$gsd-execute-phase`, `$gsd-quick` |
 | **Parallelism** | Multiple (parallel within waves, sequential across waves) |
-| **Tools** | Read, Write, Edit, Bash, Grep, Glob |
+| **Tools** | read_file, write_file, edit, run_shell_command, grep_search, glob |
 | **Model (balanced)** | Sonnet |
 | **Color** | Yellow |
 | **Produces** | Code changes, git commits, `{phase}-{N}-SUMMARY.md` |
@@ -173,16 +173,16 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:plan-phase` (verification loop, max 3 iterations) |
+| **Spawned by** | `$gsd-plan-phase` (verification loop, max 3 iterations) |
 | **Parallelism** | Single instance (iterative) |
-| **Tools** | Read, Bash, Glob, Grep |
+| **Tools** | read_file, run_shell_command, glob, grep_search |
 | **Model (balanced)** | Sonnet |
 | **Color** | Green |
 | **Produces** | PASS/FAIL verdict with specific feedback |
 
 **8 Verification Dimensions:**
 1. Requirement coverage
-2. Task atomicity
+2. task atomicity
 3. Dependency ordering
 4. File scope
 5. Verification commands
@@ -198,9 +198,9 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:audit-milestone` |
+| **Spawned by** | `$gsd-audit-milestone` |
 | **Parallelism** | Single instance |
-| **Tools** | Read, Bash, Grep, Glob |
+| **Tools** | read_file, run_shell_command, grep_search, glob |
 | **Model (balanced)** | Sonnet |
 | **Color** | Blue |
 | **Produces** | Integration verification report |
@@ -213,9 +213,9 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:ui-phase` (validation loop, max 2 iterations) |
+| **Spawned by** | `$gsd-ui-phase` (validation loop, max 2 iterations) |
 | **Parallelism** | Single instance |
-| **Tools** | Read, Bash, Glob, Grep |
+| **Tools** | read_file, run_shell_command, glob, grep_search |
 | **Model (balanced)** | Sonnet |
 | **Color** | `#22D3EE` (cyan) |
 | **Produces** | BLOCK/FLAG/PASS verdict |
@@ -228,9 +228,9 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:execute-phase` (after all executors complete) |
+| **Spawned by** | `$gsd-execute-phase` (after all executors complete) |
 | **Parallelism** | Single instance |
-| **Tools** | Read, Write, Bash, Grep, Glob |
+| **Tools** | read_file, write_file, run_shell_command, grep_search, glob |
 | **Model (balanced)** | Sonnet |
 | **Color** | Green |
 | **Produces** | `{phase}-VERIFICATION.md` |
@@ -238,7 +238,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 **Key behaviors:**
 - Checks codebase against phase goals, not just task completion
 - PASS/FAIL with specific evidence
-- Logs issues for `/gsd:verify-work` to address
+- Logs issues for `$gsd-verify-work` to address
 
 ---
 
@@ -248,9 +248,9 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:validate-phase` |
+| **Spawned by** | `$gsd-validate-phase` |
 | **Parallelism** | Single instance |
-| **Tools** | Read, Write, Edit, Bash, Grep, Glob |
+| **Tools** | read_file, write_file, edit, run_shell_command, grep_search, glob |
 | **Model (balanced)** | Sonnet |
 | **Produces** | Test files, updated `VALIDATION.md` |
 
@@ -267,9 +267,9 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:ui-review` |
+| **Spawned by** | `$gsd-ui-review` |
 | **Parallelism** | Single instance |
-| **Tools** | Read, Write, Bash, Grep, Glob |
+| **Tools** | read_file, write_file, run_shell_command, grep_search, glob |
 | **Model (balanced)** | Sonnet |
 | **Color** | `#F472B6` (pink) |
 | **Produces** | `{phase}-UI-REVIEW.md` with scores |
@@ -290,15 +290,15 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:map-codebase` |
+| **Spawned by** | `$gsd-map-codebase` |
 | **Parallelism** | 4 instances (tech, architecture, quality, concerns) |
-| **Tools** | Read, Bash, Grep, Glob, Write |
+| **Tools** | read_file, run_shell_command, grep_search, glob, write_file |
 | **Model (balanced)** | Haiku |
 | **Color** | Cyan |
 | **Produces** | `.planning/codebase/*.md` (7 documents) |
 
 **Key behaviors:**
-- Read-only exploration + structured output
+- read_file-only exploration + structured output
 - Writes documents directly to disk
 - No reasoning required — pattern extraction from file contents
 
@@ -310,9 +310,9 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:debug`, `/gsd:verify-work` (for failures) |
+| **Spawned by** | `$gsd-debug`, `$gsd-verify-work` (for failures) |
 | **Parallelism** | Single instance (interactive) |
-| **Tools** | Read, Write, Edit, Bash, Grep, Glob, WebSearch |
+| **Tools** | read_file, write_file, edit, run_shell_command, grep_search, glob, web_search |
 | **Model (balanced)** | Sonnet |
 | **Color** | Orange |
 | **Produces** | `.planning/debug/*.md`, knowledge-base updates |
@@ -335,18 +335,18 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd:profile-user` |
+| **Spawned by** | `$gsd-profile-user` |
 | **Parallelism** | Single instance |
-| **Tools** | Read |
+| **Tools** | read_file |
 | **Model (balanced)** | Sonnet |
 | **Color** | Magenta |
-| **Produces** | `USER-PROFILE.md`, `/gsd:dev-preferences`, `CLAUDE.md` profile section |
+| **Produces** | `USER-PROFILE.md`, `$gsd-dev-preferences`, `CLAUDE.md` profile section |
 
 **Behavioral Dimensions:**
 Communication style, decision patterns, debugging approach, UX preferences, vendor choices, frustration triggers, learning style, explanation depth.
 
 **Key behaviors:**
-- Read-only agent — analyzes extracted session data, does not modify files
+- read_file-only agent — analyzes extracted session data, does not modify files
 - Produces scored dimensions with confidence levels and evidence citations
 - Questionnaire fallback when session history is unavailable
 
@@ -354,7 +354,7 @@ Communication style, decision patterns, debugging approach, UX preferences, vend
 
 ## Agent Tool Permissions Summary
 
-| Agent | Read | Write | Edit | Bash | Grep | Glob | WebSearch | WebFetch | MCP |
+| Agent | read_file | write_file | edit | run_shell_command | grep_search | glob | web_search | web_fetch | MCP |
 |-------|------|-------|------|------|------|------|-----------|----------|-----|
 | project-researcher | ✓ | ✓ | | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | phase-researcher | ✓ | ✓ | | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -374,7 +374,7 @@ Communication style, decision patterns, debugging approach, UX preferences, vend
 | user-profiler | ✓ | | | | | | | | |
 
 **Principle of Least Privilege:**
-- Checkers are read-only (no Write/Edit) — they evaluate, never modify
+- Checkers are read-only (no write_file/edit) — they evaluate, never modify
 - Researchers have web access — they need current ecosystem information
-- Executors have Edit — they modify code but not web access
-- Mappers have Write — they write analysis documents but not Edit (no code changes)
+- Executors have edit — they modify code but not web access
+- Mappers have write_file — they write analysis documents but not edit (no code changes)

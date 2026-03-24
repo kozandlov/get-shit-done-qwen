@@ -1,11 +1,11 @@
 ---
-name: gsd:thread
+name: gsd-thread
 description: Manage persistent context threads for cross-session work
 argument-hint: [name | description]
 allowed-tools:
-  - Read
-  - Write
-  - Bash
+  - read_file
+  - write_file
+  - run_shell_command
 ---
 
 <objective>
@@ -39,7 +39,7 @@ For each thread, read the first few lines to show title and status:
 
 If no threads exist, show:
 ```
-No threads found. Create one with: /gsd:thread <description>
+No threads found. Create one with: $gsd-thread <description>
 ```
 </mode_list>
 
@@ -62,7 +62,7 @@ Create a new thread:
 
 1. Generate slug from description:
    ```bash
-   SLUG=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" generate-slug "$ARGUMENTS")
+   SLUG=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" generate-slug "$ARGUMENTS")
    ```
 
 2. Create the threads directory if needed:
@@ -70,7 +70,7 @@ Create a new thread:
    mkdir -p .planning/threads
    ```
 
-3. Write the thread file:
+3. write_file the thread file:
    ```bash
    cat > ".planning/threads/${SLUG}.md" << 'EOF'
    # Thread: {description}
@@ -101,7 +101,7 @@ Create a new thread:
 
 5. Commit:
    ```bash
-   node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: create thread — ${ARGUMENTS}" --files ".planning/threads/${SLUG}.md"
+   node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs: create thread — ${ARGUMENTS}" --files ".planning/threads/${SLUG}.md"
    ```
 
 6. Report:
@@ -111,7 +111,7 @@ Create a new thread:
    Thread: {slug}
    File: .planning/threads/{slug}.md
 
-   Resume anytime with: /gsd:thread {slug}
+   Resume anytime with: $gsd-thread {slug}
    ```
 </mode_create>
 
@@ -119,9 +119,28 @@ Create a new thread:
 
 <notes>
 - Threads are NOT phase-scoped — they exist independently of the roadmap
-- Lighter weight than /gsd:pause-work — no phase state, no plan context
+- Lighter weight than $gsd-pause-work — no phase state, no plan context
 - The value is in Context and Next Steps — a cold-start session can pick up immediately
 - Threads can be promoted to phases or backlog items when they mature:
-  /gsd:add-phase or /gsd:add-backlog with context from the thread
+  $gsd-add-phase or $gsd-add-backlog with context from the thread
 - Thread files live in .planning/threads/ — no collision with phases or other GSD structures
 </notes>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-thread ~/.qwen/skills/gsd-thread
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-thread .qwen/skills/gsd-thread
+```
+
+**Usage:**
+```bash
+$gsd-thread
+```

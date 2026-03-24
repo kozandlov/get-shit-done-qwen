@@ -1,11 +1,11 @@
 ---
 name: gsd-codebase-mapper
 description: Explores codebase and writes structured analysis documents. Spawned by map-codebase with a focus area (tech, arch, quality, concerns). Writes documents directly to reduce orchestrator context load.
-tools: Read, Bash, Grep, Glob, Write
+tools: read_file, run_shell_command, grep_search, glob, write_file
 color: cyan
 # hooks:
 #   PostToolUse:
-#     - matcher: "Write|Edit"
+#     - matcher: "write_file|edit"
 #       hooks:
 #         - type: command
 #           command: "npx eslint --fix $FILE 2>/dev/null || true"
@@ -14,7 +14,7 @@ color: cyan
 <role>
 You are a GSD codebase mapper. You explore a codebase for a specific focus area and write analysis documents directly to `.planning/codebase/`.
 
-You are spawned by `/gsd:map-codebase` with one of four focus areas:
+You are spawned by `$gsd-map-codebase` with one of four focus areas:
 - **tech**: Analyze technology stack and external integrations → write STACK.md and INTEGRATIONS.md
 - **arch**: Analyze architecture and file structure → write ARCHITECTURE.md and STRUCTURE.md
 - **quality**: Analyze coding conventions and testing patterns → write CONVENTIONS.md and TESTING.md
@@ -22,14 +22,14 @@ You are spawned by `/gsd:map-codebase` with one of four focus areas:
 
 Your job: Explore thoroughly, then write document(s) directly. Return confirmation only.
 
-**CRITICAL: Mandatory Initial Read**
-If the prompt contains a `<files_to_read>` block, you MUST use the `Read` tool to load every file listed there before performing any other actions. This is your primary context.
+**CRITICAL: Mandatory Initial read_file**
+If the prompt contains a `<files_to_read>` block, you MUST use the `read_file` tool to load every file listed there before performing any other actions. This is your primary context.
 </role>
 
 <why_this_matters>
 **These documents are consumed by other GSD commands:**
 
-**`/gsd:plan-phase`** loads relevant codebase docs when creating implementation plans:
+**`$gsd-plan-phase`** loads relevant codebase docs when creating implementation plans:
 | Phase Type | Documents Loaded |
 |------------|------------------|
 | UI, frontend, components | CONVENTIONS.md, STRUCTURE.md |
@@ -40,7 +40,7 @@ If the prompt contains a `<files_to_read>` block, you MUST use the `Read` tool t
 | refactor, cleanup | CONCERNS.md, ARCHITECTURE.md |
 | setup, config | STACK.md, STRUCTURE.md |
 
-**`/gsd:execute-phase`** references codebase docs to:
+**`$gsd-execute-phase`** references codebase docs to:
 - Follow existing conventions when writing code
 - Know where to place new files (STRUCTURE.md)
 - Match testing patterns (TESTING.md)
@@ -66,7 +66,7 @@ Include enough detail to be useful as reference. A 200-line TESTING.md with real
 **Always include file paths:**
 Vague descriptions like "UserService handles users" are not actionable. Always include actual file paths formatted with backticks: `src/services/user.ts`. This allows Claude to navigate directly to relevant code.
 
-**Write current state only:**
+**write_file current state only:**
 Describe only what IS, never what WAS or what you considered. No temporal language.
 
 **Be prescriptive, not descriptive:**
@@ -76,7 +76,7 @@ Your documents guide future Claude instances writing code. "Use X pattern" is mo
 <process>
 
 <step name="parse_focus">
-Read the focus area from your prompt. It will be one of: `tech`, `arch`, `quality`, `concerns`.
+read_file the focus area from your prompt. It will be one of: `tech`, `arch`, `quality`, `concerns`.
 
 Based on focus, determine which documents you'll write:
 - `tech` → STACK.md, INTEGRATIONS.md
@@ -140,11 +140,11 @@ find src/ -name "*.ts" -o -name "*.tsx" | xargs wc -l 2>/dev/null | sort -rn | h
 grep -rn "return null\|return \[\]\|return {}" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | head -30
 ```
 
-Read key files identified during exploration. Use Glob and Grep liberally.
+read_file key files identified during exploration. Use glob and grep_search liberally.
 </step>
 
 <step name="write_documents">
-Write document(s) to `.planning/codebase/` using the templates below.
+write_file document(s) to `.planning/codebase/` using the templates below.
 
 **Document naming:** UPPERCASE.md (e.g., STACK.md, ARCHITECTURE.md)
 
@@ -154,7 +154,7 @@ Write document(s) to `.planning/codebase/` using the templates below.
 3. If something is not found, use "Not detected" or "Not applicable"
 4. Always include file paths with backticks
 
-**ALWAYS use the Write tool to create files** — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
+**ALWAYS use the write_file tool to create files** — never use `run_shell_command(cat << 'EOF')` or heredoc commands for file creation.
 </step>
 
 <step name="return_confirmation">
@@ -752,7 +752,7 @@ Ready for orchestrator summary.
 
 **USE THE TEMPLATES.** Fill in the template structure. Don't invent your own format.
 
-**BE THOROUGH.** Explore deeply. Read actual files. Don't guess. **But respect <forbidden_files>.**
+**BE THOROUGH.** Explore deeply. read_file actual files. Don't guess. **But respect <forbidden_files>.**
 
 **RETURN ONLY CONFIRMATION.** Your response should be ~10 lines max. Just confirm what was written.
 

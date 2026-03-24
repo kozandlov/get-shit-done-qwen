@@ -34,7 +34,7 @@ No external AI CLIs found. Install at least one:
 - codex: https://github.com/openai/codex
 - claude: https://github.com/anthropics/claude-code
 
-Then run /gsd:review again.
+Then run $gsd-review again.
 ```
 Exit.
 
@@ -46,11 +46,11 @@ to ensure independence. At least one DIFFERENT CLI must be available.
 Collect phase artifacts for the review prompt:
 
 ```bash
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-Read from init: `phase_dir`, `phase_number`, `padded_phase`.
+read_file from init: `phase_dir`, `phase_number`, `padded_phase`.
 
 Then read:
 1. `.planning/PROJECT.md` (first 80 lines — project context)
@@ -110,7 +110,7 @@ Focus on:
 Output your review in markdown format.
 ```
 
-Write to a temp file: `/tmp/gsd-review-prompt-{phase}.md`
+write_file to a temp file: `/tmp/gsd-review-prompt-{phase}.md`
 </step>
 
 <step name="invoke_reviewers">
@@ -191,7 +191,7 @@ plans_reviewed: [{list of PLAN.md files}]
 
 Commit:
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: cross-AI review for phase {N}" --files {phase_dir}/{padded_phase}-REVIEWS.md
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs: cross-AI review for phase {N}" --files {phase_dir}/{padded_phase}-REVIEWS.md
 ```
 </step>
 
@@ -211,7 +211,7 @@ Consensus concerns:
 Full review: {padded_phase}-REVIEWS.md
 
 To incorporate feedback into planning:
-  /gsd:plan-phase {N} --reviews
+  $gsd-plan-phase {N} --reviews
 ```
 
 Clean up temp files.
@@ -224,5 +224,5 @@ Clean up temp files.
 - [ ] REVIEWS.md written with structured feedback
 - [ ] Consensus summary synthesized from multiple reviewers
 - [ ] Temp files cleaned up
-- [ ] User knows how to use feedback (/gsd:plan-phase --reviews)
+- [ ] User knows how to use feedback ($gsd-plan-phase --reviews)
 </success_criteria>

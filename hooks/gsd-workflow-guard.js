@@ -2,14 +2,14 @@
 // gsd-hook-version: {{GSD_VERSION}}
 // GSD Workflow Guard — PreToolUse hook
 // Detects when Claude attempts file edits outside a GSD workflow context
-// (no active /gsd: command or Task subagent) and injects an advisory warning.
+// (no active $gsd- command or task subagent) and injects an advisory warning.
 //
 // This is a SOFT guard — it advises, not blocks. The edit still proceeds.
-// The warning nudges Claude to use /gsd:quick or /gsd:fast instead of
+// The warning nudges Claude to use $gsd-quick or $gsd-fast instead of
 // making direct edits that bypass state tracking.
 //
 // Enable via config: hooks.workflow_guard: true (default: false)
-// Only triggers on Write/Edit tool calls to non-.planning/ files.
+// Only triggers on write_file/edit tool calls to non-.planning/ files.
 
 const fs = require('fs');
 const path = require('path');
@@ -24,12 +24,12 @@ process.stdin.on('end', () => {
     const data = JSON.parse(input);
     const toolName = data.tool_name;
 
-    // Only guard Write and Edit tool calls
-    if (toolName !== 'Write' && toolName !== 'Edit') {
+    // Only guard write_file and edit tool calls
+    if (toolName !== 'write_file' && toolName !== 'edit') {
       process.exit(0);
     }
 
-    // Check if we're inside a GSD workflow (Task subagent or /gsd: command)
+    // Check if we're inside a GSD workflow (task subagent or $gsd- command)
     // Subagents have a session_id that differs from the parent
     // and typically have a description field set by the orchestrator
     if (data.tool_input?.is_subagent || data.session_type === 'task') {
@@ -80,7 +80,7 @@ process.stdin.on('end', () => {
         hookEventName: "PreToolUse",
         additionalContext: `⚠️ WORKFLOW ADVISORY: You're editing ${path.basename(filePath)} directly without a GSD command. ` +
           'This edit will not be tracked in STATE.md or produce a SUMMARY.md. ' +
-          'Consider using /gsd:fast for trivial fixes or /gsd:quick for larger changes ' +
+          'Consider using $gsd-fast for trivial fixes or $gsd-quick for larger changes ' +
           'to maintain project state tracking. ' +
           'If this is intentional (e.g., user explicitly asked for a direct edit), proceed normally.'
       }

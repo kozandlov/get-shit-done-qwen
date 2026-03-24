@@ -11,7 +11,7 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 </purpose>
 
 <required_reading>
-@~/.claude/get-shit-done/references/continuation-format.md
+@~/.qwen/get-shit-done/references/continuation-format.md
 </required_reading>
 
 <process>
@@ -20,7 +20,7 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 Load all context in one call:
 
 ```bash
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init resume)
+INIT=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" init resume)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -28,12 +28,12 @@ Parse JSON for: `state_exists`, `roadmap_exists`, `project_exists`, `planning_ex
 
 **If `state_exists` is true:** Proceed to load_state
 **If `state_exists` is false but `roadmap_exists` or `project_exists` is true:** Offer to reconstruct STATE.md
-**If `planning_exists` is false:** This is a new project - route to /gsd:new-project
+**If `planning_exists` is false:** This is a new project - route to $gsd-new-project
 </step>
 
 <step name="load_state">
 
-Read and parse STATE.md, then PROJECT.md:
+read_file and parse STATE.md, then PROJECT.md:
 
 ```bash
 cat .planning/STATE.md
@@ -83,7 +83,7 @@ fi
 
 **If HANDOFF.json exists:**
 
-- This is the primary resumption source — structured data from `/gsd:pause-work`
+- This is the primary resumption source — structured data from `$gsd-pause-work`
 - Parse `status`, `phase`, `plan`, `task`, `total_tasks`, `next_action`
 - Check `blockers` and `human_actions_pending` — surface these immediately
 - Check `completed_tasks` for `in_progress` items — these need attention first
@@ -95,7 +95,7 @@ fi
 **If .continue-here file exists (fallback):**
 
 - This is a mid-plan resumption point
-- Read the file for specific resumption context
+- read_file the file for specific resumption context
 - Flag: "Found mid-plan checkpoint"
 
 **If PLAN without SUMMARY exists:**
@@ -106,7 +106,7 @@ fi
 **If interrupted agent found:**
 
 - Subagent was spawned but session ended before completion
-- Read agent-history.json for task details
+- read_file agent-history.json for task details
 - Flag: "Found interrupted agent"
   </step>
 
@@ -133,13 +133,13 @@ Present complete project status to user:
 [If interrupted agent found:]
 ⚠️  Interrupted agent detected:
     Agent ID: [id]
-    Task: [task description from agent-history.json]
+    task: [task description from agent-history.json]
     Interrupted: [timestamp]
 
-    Resume with: Task tool (resume parameter with agent ID)
+    Resume with: task tool (resume parameter with agent ID)
 
 [If pending todos exist:]
-📋 [N] pending todos — /gsd:check-todos to review
+📋 [N] pending todos — $gsd-check-todos to review
 
 [If blockers exist:]
 ⚠️  Carried concerns:
@@ -156,7 +156,7 @@ Present complete project status to user:
 Based on project state, determine the most logical next action:
 
 **If interrupted agent exists:**
-→ Primary: Resume interrupted agent (Task tool with resume parameter)
+→ Primary: Resume interrupted agent (task tool with resume parameter)
 → Option: Start fresh (abandon agent work)
 
 **If HANDOFF.json exists:**
@@ -199,11 +199,11 @@ What would you like to do?
 [Primary action based on state - e.g.:]
 1. Resume interrupted agent [if interrupted agent found]
    OR
-1. Execute phase (/gsd:execute-phase {phase})
+1. Execute phase ($gsd-execute-phase {phase})
    OR
-1. Discuss Phase 3 context (/gsd:discuss-phase 3) [if CONTEXT.md missing]
+1. Discuss Phase 3 context ($gsd-discuss-phase 3) [if CONTEXT.md missing]
    OR
-1. Plan Phase 3 (/gsd:plan-phase 3) [if CONTEXT.md exists or discuss option declined]
+1. Plan Phase 3 ($gsd-plan-phase 3) [if CONTEXT.md exists or discuss option declined]
 
 [Secondary options:]
 2. Review current phase status
@@ -234,7 +234,7 @@ Based on user selection, route to appropriate workflow:
 
   **{phase}-{plan}: [Plan Name]** — [objective from PLAN.md]
 
-  `/gsd:execute-phase {phase}`
+  `$gsd-execute-phase {phase}`
 
   <sub>`/clear` first → fresh context window</sub>
 
@@ -248,21 +248,21 @@ Based on user selection, route to appropriate workflow:
 
   **Phase [N]: [Name]** — [Goal from ROADMAP.md]
 
-  `/gsd:plan-phase [phase-number]`
+  `$gsd-plan-phase [phase-number]`
 
   <sub>`/clear` first → fresh context window</sub>
 
   ---
 
   **Also available:**
-  - `/gsd:discuss-phase [N]` — gather context first
-  - `/gsd:research-phase [N]` — investigate unknowns
+  - `$gsd-discuss-phase [N]` — gather context first
+  - `$gsd-research-phase [N]` — investigate unknowns
 
   ---
   ```
 - **Advance to next phase** → ./transition.md (internal workflow, invoked inline — NOT a user command)
-- **Check todos** → Read .planning/todos/pending/, present summary
-- **Review alignment** → Read PROJECT.md, compare to current state
+- **Check todos** → read_file .planning/todos/pending/, present summary
+- **Review alignment** → read_file PROJECT.md, compare to current state
 - **Something else** → Ask what they need
 </step>
 
@@ -289,8 +289,8 @@ If STATE.md is missing but other artifacts exist:
 
 "STATE.md missing. Reconstructing from artifacts..."
 
-1. Read PROJECT.md → Extract "What This Is" and Core Value
-2. Read ROADMAP.md → Determine phases, find current position
+1. read_file PROJECT.md → Extract "What This Is" and Core Value
+2. read_file ROADMAP.md → Determine phases, find current position
 3. Scan \*-SUMMARY.md files → Extract decisions, concerns
 4. Count pending todos in .planning/todos/pending/
 5. Check for .continue-here files → Session continuity

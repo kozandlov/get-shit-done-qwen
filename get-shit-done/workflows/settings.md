@@ -3,7 +3,7 @@ Interactive configuration of GSD workflow agents (research, plan_check, verifier
 </purpose>
 
 <required_reading>
-Read all files referenced by the invoking prompt's execution_context before starting.
+read_file all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
 <process>
@@ -12,8 +12,8 @@ Read all files referenced by the invoking prompt's execution_context before star
 Ensure config exists and load current state:
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-ensure-section
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" state load)
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" config-ensure-section
+INIT=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" state load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -31,16 +31,16 @@ Parse current values (default to `true` if not present):
 - `workflow.verifier` — spawn verifier during execute-phase
 - `workflow.nyquist_validation` — validation architecture research during plan-phase (default: true if absent)
 - `workflow.ui_phase` — generate UI-SPEC.md design contracts for frontend phases (default: true if absent)
-- `workflow.ui_safety_gate` — prompt to run /gsd:ui-phase before planning frontend phases (default: true if absent)
+- `workflow.ui_safety_gate` — prompt to run $gsd-ui-phase before planning frontend phases (default: true if absent)
 - `model_profile` — which model each agent uses (default: `balanced`)
 - `git.branching_strategy` — branching approach (default: `"none"`)
 </step>
 
 <step name="present_settings">
-Use AskUserQuestion with current values pre-selected:
+Use ask_user_question with current values pre-selected:
 
 ```
-AskUserQuestion([
+ask_user_question([
   {
     question: "Which model profile for agents?",
     header: "Model",
@@ -85,7 +85,7 @@ AskUserQuestion([
     multiSelect: false,
     options: [
       { label: "No (Recommended)", description: "Manual /clear + paste between stages" },
-      { label: "Yes", description: "Chain stages via Task() subagents (same isolation)" }
+      { label: "Yes", description: "Chain stages via task() subagents (same isolation)" }
     ]
   },
   {
@@ -109,11 +109,11 @@ AskUserQuestion([
     ]
   },
   {
-    question: "Enable UI Safety Gate? (prompts to run /gsd:ui-phase before planning frontend phases)",
+    question: "Enable UI Safety Gate? (prompts to run $gsd-ui-phase before planning frontend phases)",
     header: "UI Gate",
     multiSelect: false,
     options: [
-      { label: "Yes (Recommended)", description: "plan-phase asks to run /gsd:ui-phase first when frontend indicators detected." },
+      { label: "Yes (Recommended)", description: "plan-phase asks to run $gsd-ui-phase first when frontend indicators detected." },
       { label: "No", description: "No prompt — plan-phase proceeds without UI-SPEC check." }
     ]
   },
@@ -180,14 +180,14 @@ Merge new settings into existing config.json:
 }
 ```
 
-Write updated config to `.planning/config.json`.
+write_file updated config to `.planning/config.json`.
 </step>
 
 <step name="save_as_defaults">
 Ask whether to save these settings as global defaults for future projects:
 
 ```
-AskUserQuestion([
+ask_user_question([
   {
     question: "Save these as default settings for all new projects?",
     header: "Defaults",
@@ -206,7 +206,7 @@ If "Yes": write the same config object (minus project-specific fields like `brav
 mkdir -p ~/.gsd
 ```
 
-Write `~/.gsd/defaults.json` with:
+write_file `~/.gsd/defaults.json` with:
 ```json
 {
   "mode": <current>,
@@ -251,13 +251,13 @@ Display:
 | Context Warnings     | {On/Off} |
 | Saved as Defaults    | {Yes/No} |
 
-These settings apply to future /gsd:plan-phase and /gsd:execute-phase runs.
+These settings apply to future $gsd-plan-phase and $gsd-execute-phase runs.
 
 Quick commands:
-- /gsd:set-profile <profile> — switch model profile
-- /gsd:plan-phase --research — force research
-- /gsd:plan-phase --skip-research — skip research
-- /gsd:plan-phase --skip-verify — skip plan check
+- $gsd-set-profile <profile> — switch model profile
+- $gsd-plan-phase --research — force research
+- $gsd-plan-phase --skip-research — skip research
+- $gsd-plan-phase --skip-verify — skip plan check
 ```
 </step>
 

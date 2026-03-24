@@ -1,17 +1,17 @@
 ---
-name: gsd:execute-phase
+name: gsd-execute-phase
 description: Execute all plans in a phase with wave-based parallelization
 argument-hint: "<phase-number> [--gaps-only] [--interactive]"
 allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
-  - Task
-  - TodoWrite
-  - AskUserQuestion
+  - read_file
+  - write_file
+  - edit
+  - glob
+  - grep_search
+  - run_shell_command
+  - task
+  - todo_write
+  - ask_user_question
 ---
 <objective>
 Execute all plans in a phase using wave-based parallel execution.
@@ -22,8 +22,8 @@ Context budget: ~15% orchestrator, 100% fresh per subagent.
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/execute-phase.md
-@~/.claude/get-shit-done/references/ui-brand.md
+@~/.qwen/get-shit-done/workflows/execute-phase.md
+@~/.qwen/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -37,6 +37,25 @@ Context files are resolved inside the workflow via `gsd-tools init execute-phase
 </context>
 
 <process>
-Execute the execute-phase workflow from @~/.claude/get-shit-done/workflows/execute-phase.md end-to-end.
+Execute the execute-phase workflow from @~/.qwen/get-shit-done/workflows/execute-phase.md end-to-end.
 Preserve all workflow gates (wave execution, checkpoint handling, verification, state updates, routing).
 </process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-execute-phase ~/.qwen/skills/gsd-execute-phase
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-execute-phase .qwen/skills/gsd-execute-phase
+```
+
+**Usage:**
+```bash
+$gsd-execute-phase
+```

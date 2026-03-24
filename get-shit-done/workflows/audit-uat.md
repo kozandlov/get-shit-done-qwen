@@ -8,7 +8,7 @@ Cross-phase audit of all UAT and verification files. Finds every outstanding ite
 Run the CLI audit:
 
 ```bash
-AUDIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" audit-uat --raw)
+AUDIT=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" audit-uat --raw)
 ```
 
 Parse JSON for `results` array and `summary` object.
@@ -37,7 +37,7 @@ Group items by what's actionable NOW vs. what needs prerequisites:
 - `build_needed` — needs release/preview build
 - `third_party` — needs external service configuration
 
-For each item in "Testable Now", use Grep/Read to check if the underlying feature still exists in the codebase:
+For each item in "Testable Now", use grep_search/read_file to check if the underlying feature still exists in the codebase:
 - If the test references a component/function that no longer exists → mark as `stale`
 - If the test references code that has been significantly rewritten → mark as `needs_update`
 - Otherwise → mark as `active`
@@ -76,9 +76,9 @@ Present the audit report:
 
 ## Recommended Actions
 
-1. **Close stale items:** `/gsd:verify-work {phase}` — mark stale tests as resolved
+1. **Close stale items:** `$gsd-verify-work {phase}` — mark stale tests as resolved
 2. **Run active tests:** Human UAT test plan below
-3. **When prerequisites met:** Retest blocked items with `/gsd:verify-work {phase}`
+3. **When prerequisites met:** Retest blocked items with `$gsd-verify-work {phase}`
 ```
 </step>
 

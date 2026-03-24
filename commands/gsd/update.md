@@ -1,9 +1,9 @@
 ---
-name: gsd:update
+name: gsd-update
 description: Update GSD to latest version with changelog display
 allowed-tools:
-  - Bash
-  - AskUserQuestion
+  - run_shell_command
+  - ask_user_question
 ---
 
 <objective>
@@ -19,11 +19,11 @@ Routes to the update workflow which handles:
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/update.md
+@~/.qwen/get-shit-done/workflows/update.md
 </execution_context>
 
 <process>
-**Follow the update workflow** from `@~/.claude/get-shit-done/workflows/update.md`.
+**Follow the update workflow** from `@~/.qwen/get-shit-done/workflows/update.md`.
 
 The workflow handles all logic including:
 1. Installed version detection (local/global)
@@ -35,3 +35,22 @@ The workflow handles all logic including:
 7. Update execution
 8. Cache clearing
 </process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-update ~/.qwen/skills/gsd-update
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-update .qwen/skills/gsd-update
+```
+
+**Usage:**
+```bash
+$gsd-update
+```

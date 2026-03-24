@@ -1,5 +1,5 @@
 ---
-name: gsd:join-discord
+name: gsd-join-discord
 description: Join the GSD Discord community
 ---
 
@@ -16,3 +16,22 @@ Connect with other GSD users, get help, share what you're building, and stay upd
 
 Click the link or paste it into your browser to join.
 </output>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-join-discord ~/.qwen/skills/gsd-join-discord
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-join-discord .qwen/skills/gsd-join-discord
+```
+
+**Usage:**
+```bash
+$gsd-join-discord
+```

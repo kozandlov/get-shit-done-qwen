@@ -49,7 +49,7 @@ If you're using Claude Code with OpenRouter, a local model, or any non-Anthropic
 
 ```bash
 # Via settings command
-/gsd:settings
+$gsd-settings
 # → Select "Inherit" for model profile
 
 # Or manually in .planning/config.json
@@ -65,10 +65,10 @@ Without `inherit`, GSD's default `balanced` profile spawns specific Anthropic mo
 Orchestrators resolve model before spawning:
 
 ```
-1. Read .planning/config.json
+1. read_file .planning/config.json
 2. Check model_overrides for agent-specific override
 3. If no override, look up agent in profile table
-4. Pass model parameter to Task call
+4. Pass model parameter to task call
 ```
 
 ## Per-Agent Overrides
@@ -89,7 +89,7 @@ Overrides take precedence over the profile. Valid values: `opus`, `sonnet`, `hai
 
 ## Switching Profiles
 
-Runtime: `/gsd:set-profile <profile>`
+Runtime: `$gsd-set-profile <profile>`
 
 Per-project default: Set in `.planning/config.json`:
 ```json
@@ -110,7 +110,7 @@ Executors follow explicit PLAN.md instructions. The plan already contains the re
 Verification requires goal-backward reasoning - checking if code *delivers* what the phase promised, not just pattern matching. Sonnet handles this well; Haiku may miss subtle gaps.
 
 **Why Haiku for gsd-codebase-mapper?**
-Read-only exploration and pattern extraction. No reasoning required, just structured output from file contents.
+read_file-only exploration and pattern extraction. No reasoning required, just structured output from file contents.
 
 **Why `inherit` instead of passing `opus` directly?**
 Claude Code's `"opus"` alias maps to a specific model version. Organizations may block older opus versions while allowing newer ones. GSD returns `"inherit"` for opus-tier agents, causing them to use whatever opus version the user has configured in their session. This avoids version conflicts and silent fallbacks to Sonnet.

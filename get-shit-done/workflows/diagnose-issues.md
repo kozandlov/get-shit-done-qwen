@@ -26,7 +26,7 @@ With diagnosis: "Comment doesn't refresh" → "useEffect missing dependency" →
 <step name="parse_gaps">
 **Extract gaps from UAT.md:**
 
-Read the "Gaps" section (YAML format):
+read_file the "Gaps" section (YAML format):
 ```yaml
 - truth: "Comment appears immediately after submission"
   status: failed
@@ -78,7 +78,7 @@ This runs in parallel - all gaps investigated simultaneously.
 For each gap, fill the debug-subagent-prompt template and spawn:
 
 ```
-Task(
+task(
   prompt=filled_debug_subagent_prompt + "\n\n<files_to_read>\n- {phase_dir}/{phase_num}-UAT.md\n- .planning/STATE.md\n</files_to_read>",
   subagent_type="gsd-debugger",
   description="Debug: {truth_short}"
@@ -158,7 +158,7 @@ Update status in frontmatter to "diagnosed".
 
 Commit the updated UAT.md:
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs({phase_num}): add root causes from diagnosis" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
+node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" commit "docs({phase_num}): add root causes from diagnosis" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
 ```
 </step>
 
@@ -201,7 +201,7 @@ Agents only diagnose—plan-phase --gaps handles fixes (no fix application).
 
 **Agent times out:**
 - Check DEBUG-{slug}.md for partial progress
-- Can resume with /gsd:debug
+- Can resume with $gsd-debug
 
 **All agents fail:**
 - Something systemic (permissions, git, etc.)

@@ -1,16 +1,16 @@
 ---
-name: gsd:validate-phase
+name: gsd-validate-phase
 description: Retroactively audit and fill Nyquist validation gaps for a completed phase
 argument-hint: "[phase number]"
 allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
-  - Glob
-  - Grep
-  - Task
-  - AskUserQuestion
+  - read_file
+  - write_file
+  - edit
+  - run_shell_command
+  - glob
+  - grep_search
+  - task
+  - ask_user_question
 ---
 <objective>
 Audit Nyquist validation coverage for a completed phase. Three states:
@@ -22,7 +22,7 @@ Output: updated VALIDATION.md + generated test files.
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/validate-phase.md
+@~/.qwen/get-shit-done/workflows/validate-phase.md
 </execution_context>
 
 <context>
@@ -30,6 +30,25 @@ Phase: $ARGUMENTS — optional, defaults to last completed phase.
 </context>
 
 <process>
-Execute @~/.claude/get-shit-done/workflows/validate-phase.md.
+Execute @~/.qwen/get-shit-done/workflows/validate-phase.md.
 Preserve all workflow gates.
 </process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-validate-phase ~/.qwen/skills/gsd-validate-phase
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-validate-phase .qwen/skills/gsd-validate-phase
+```
+
+**Usage:**
+```bash
+$gsd-validate-phase
+```

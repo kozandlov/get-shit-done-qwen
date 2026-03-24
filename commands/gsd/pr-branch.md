@@ -1,11 +1,11 @@
 ---
-name: gsd:pr-branch
+name: gsd-pr-branch
 description: Create a clean PR branch by filtering out .planning/ commits — ready for code review
 argument-hint: "[target branch, default: main]"
 allowed-tools:
-  - Bash
-  - Read
-  - AskUserQuestion
+  - run_shell_command
+  - read_file
+  - ask_user_question
 ---
 
 <objective>
@@ -17,9 +17,28 @@ changes that are irrelevant to code review.
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/pr-branch.md
+@~/.qwen/get-shit-done/workflows/pr-branch.md
 </execution_context>
 
 <process>
-Execute the pr-branch workflow from @~/.claude/get-shit-done/workflows/pr-branch.md end-to-end.
+Execute the pr-branch workflow from @~/.qwen/get-shit-done/workflows/pr-branch.md end-to-end.
 </process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-pr-branch ~/.qwen/skills/gsd-pr-branch
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-pr-branch .qwen/skills/gsd-pr-branch
+```
+
+**Usage:**
+```bash
+$gsd-pr-branch
+```

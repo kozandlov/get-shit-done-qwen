@@ -1,25 +1,25 @@
 ---
-name: gsd:review
+name: gsd-review
 description: Request cross-AI peer review of phase plans from external AI CLIs
 argument-hint: "--phase N [--gemini] [--claude] [--codex] [--all]"
 allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Glob
-  - Grep
+  - read_file
+  - write_file
+  - run_shell_command
+  - glob
+  - grep_search
 ---
 
 <objective>
 Invoke external AI CLIs (Gemini, Claude, Codex) to independently review phase plans.
 Produces a structured REVIEWS.md with per-reviewer feedback that can be fed back into
-planning via /gsd:plan-phase --reviews.
+planning via $gsd-plan-phase --reviews.
 
-**Flow:** Detect CLIs → Build review prompt → Invoke each CLI → Collect responses → Write REVIEWS.md
+**Flow:** Detect CLIs → Build review prompt → Invoke each CLI → Collect responses → write_file REVIEWS.md
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/review.md
+@~/.qwen/get-shit-done/workflows/review.md
 </execution_context>
 
 <context>
@@ -33,5 +33,24 @@ Phase number: extracted from $ARGUMENTS (required)
 </context>
 
 <process>
-Execute the review workflow from @~/.claude/get-shit-done/workflows/review.md end-to-end.
+Execute the review workflow from @~/.qwen/get-shit-done/workflows/review.md end-to-end.
 </process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-review ~/.qwen/skills/gsd-review
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-review .qwen/skills/gsd-review
+```
+
+**Usage:**
+```bash
+$gsd-review
+```
