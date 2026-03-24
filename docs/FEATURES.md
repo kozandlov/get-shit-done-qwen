@@ -844,24 +844,24 @@ fix(03-01): correct auth token expiry
 
 ### 36. Multi-Runtime Support
 
-**Purpose:** Run GSD across 6 different AI coding agent runtimes.
+**Purpose:** Run GSD for Qwen Code CLI.
 
 **Requirements:**
-- REQ-RUNTIME-01: System MUST support Claude Code, OpenCode, Gemini CLI, Codex, Copilot, Antigravity
-- REQ-RUNTIME-02: Installer MUST transform content per runtime (tool names, paths, frontmatter)
-- REQ-RUNTIME-03: Installer MUST support interactive and non-interactive (`--claude --global`) modes
+- REQ-RUNTIME-01: System MUST support Qwen Code CLI
+- REQ-RUNTIME-02: Installer MUST transform upstream release content into Qwen skills and docs
+- REQ-RUNTIME-03: Installer MUST support interactive and non-interactive (`--global`, `--local`, `--config-dir`) modes
 - REQ-RUNTIME-04: Installer MUST support both global and local installation
 - REQ-RUNTIME-05: Uninstall MUST cleanly remove all GSD files without affecting other configurations
 - REQ-RUNTIME-06: Installer MUST handle platform differences (Windows, macOS, Linux, WSL, Docker)
 
-**Runtime Transformations:**
+**Install Targets:**
 
-| Aspect | Claude Code | OpenCode | Gemini | Codex | Copilot | Antigravity |
-|--------|------------|----------|--------|-------|---------|-------------|
-| Commands | Slash commands | Slash commands | Slash commands | Skills (TOML) | Slash commands | Skills |
-| Agent format | Claude native | `mode: subagent` | Claude native | Skills | Tool mapping | Skills |
-| Hook events | `PostToolUse` | N/A | `AfterTool` | N/A | N/A | N/A |
-| Config | `settings.json` | `opencode.json(c)` | `settings.json` | TOML | Instructions | Config |
+| Aspect | Qwen Code CLI |
+|--------|----------------|
+| Commands | Skills (`skills/gsd-*/SKILL.md`) |
+| Agent format | Qwen-native content transformed from upstream |
+| Hook events | `PostToolUse` |
+| Config | `.qwen/settings.json` |
 
 ---
 
@@ -873,7 +873,7 @@ fix(03-01): correct auth token expiry
 - REQ-HOOK-01: Statusline MUST display model, current task, directory, and context usage
 - REQ-HOOK-02: Context monitor MUST inject agent-facing warnings at threshold levels
 - REQ-HOOK-03: Update checker MUST run in background on session start
-- REQ-HOOK-04: All hooks MUST respect `CLAUDE_CONFIG_DIR` env var
+- REQ-HOOK-04: All hooks MUST respect `QWEN_CONFIG_DIR` env var (`CLAUDE_CONFIG_DIR` may be accepted as a compatibility alias)
 - REQ-HOOK-05: All hooks MUST include 3-second stdin timeout guard
 - REQ-HOOK-06: All hooks MUST fail silently on any error
 - REQ-HOOK-07: Context usage MUST normalize for autocompact buffer (16.5% reserved)
@@ -889,7 +889,7 @@ Color coding: <50% green, <65% yellow, <80% orange, ≥80% red with skull emoji
 
 **Command:** `$gsd-profile-user [--questionnaire] [--refresh]`
 
-**Purpose:** Analyze Claude Code session history to build behavioral profiles across 8 dimensions, generating artifacts that personalize Claude's responses to the developer's style.
+**Purpose:** Analyze Qwen Code CLI session history to build behavioral profiles across 8 dimensions, generating artifacts that personalize responses to the developer's style.
 
 **Dimensions:**
 1. Communication style (terse vs verbose, formal vs casual)
@@ -904,7 +904,7 @@ Color coding: <50% green, <65% yellow, <80% orange, ≥80% red with skull emoji
 **Generated Artifacts:**
 - `USER-PROFILE.md` — Full behavioral profile with evidence citations
 - `$gsd-dev-preferences` command — Load preferences in any session
-- `CLAUDE.md` profile section — Auto-discovered by Claude Code
+- `QWEN.md` profile section — Auto-discovered by Qwen Code CLI
 
 **Flags:**
 - `--questionnaire` — Interactive questionnaire fallback when session history is unavailable
@@ -919,7 +919,7 @@ Color coding: <50% green, <65% yellow, <80% orange, ≥80% red with skull emoji
 - REQ-PROF-01: Session analysis MUST cover at least 8 behavioral dimensions
 - REQ-PROF-02: Profile MUST cite evidence from actual session messages
 - REQ-PROF-03: Questionnaire MUST be available as fallback when no session history exists
-- REQ-PROF-04: Generated artifacts MUST be discoverable by Claude Code (CLAUDE.md integration)
+- REQ-PROF-04: Generated artifacts MUST be discoverable by Qwen Code CLI (QWEN.md integration)
 
 ### 39. Execution Hardening
 

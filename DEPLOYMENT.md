@@ -49,8 +49,8 @@
 1. Проверит последний release в `gsd-build/get-shit-done`
 2. Скачает конкретный release tag
 3. Запустит скрипт трансформации:
-   - `commands/gsd/*.md` → `commands/gsd/*.md` + `skills/gsd-*/SKILL.md`
-   - `get-shit-done/`, `docs/` (selected top-level files + `zh-CN`), `hooks/`, `bin/`, `assets/`, `README*.md` → Qwen-совместимый формат
+   - `commands/gsd/*.md` → `skills/gsd-*/SKILL.md`
+   - `get-shit-done/`, `docs/`, `hooks/`, `bin/`, `assets/`, `README*.md` → Qwen-совместимый формат
    - `~/.claude/` → `~/.qwen/`
    - `/gsd:` → `$gsd-`
 4. Создаст PR с изменениями
@@ -65,7 +65,8 @@
 git clone https://github.com/YOUR_USERNAME/gsd-qwen.git
 cd gsd-qwen
 
-# Проверьте скрипт трансформации
+# Проверьте установщик и скрипт трансформации
+node bin/install.js --help
 node scripts/transform-to-qwen.js --help
 
 # Запустите валидацию

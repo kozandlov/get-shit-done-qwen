@@ -2,9 +2,9 @@
 
 # GET SHIT DONE
 
-**一个轻量级且强大的元提示、上下文工程和规格驱动开发系统，支持 Claude Code、OpenCode、Gemini CLI 和 Codex。**
+**一个轻量级且强大的元提示、上下文工程和规格驱动开发系统，支持 Qwen Code CLI。**
 
-**解决上下文衰减 —— 即 Claude 填充上下文窗口时发生的质量退化问题。**
+**解决上下文衰减 —— 即上下文窗口填满时发生的质量退化问题。**
 
 [![npm version](https://img.shields.io/npm/v/gsd-qwen?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/gsd-qwen)
 [![npm downloads](https://img.shields.io/npm/dm/gsd-qwen?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/gsd-qwen)
@@ -18,7 +18,7 @@
 <br>
 
 ```bash
-npx gsd-qwen@latest
+npx gsd-qwen@latest --global
 ```
 
 **支持 Mac、Windows 和 Linux。**
@@ -33,7 +33,7 @@ npx gsd-qwen@latest
 
 *"我试过 SpecKit、OpenSpec 和 Taskmaster —— 这是我用过的效果最好的。"*
 
-*"这是我用过的 Claude Code 最强大的扩展。没有过度设计。真的就是把事情做完。"*
+*"这是我用过的 Qwen Code CLI 最强大的扩展。没有过度设计。真的就是把事情做完。"*
 
 <br>
 
@@ -47,7 +47,7 @@ npx gsd-qwen@latest
 
 ## 我为什么开发这个
 
-我是一名独立开发者。我不写代码 —— Claude Code 写。
+我是一名独立开发者。我不写代码 —— Qwen Code CLI 写。
 
 其他规格驱动开发工具确实存在，比如 BMAD、Speckit... 但它们似乎都把事情搞得比实际需要的复杂得多（冲刺会议、故事点、干系人同步、回顾、Jira 工作流），或者缺乏对你正在构建的东西的真正大局理解。我不是一个 50 人的软件公司。我不想搞企业级表演。我只是个想构建出好用的东西的创意人。
 
@@ -55,7 +55,7 @@ npx gsd-qwen@latest
 
 系统给 Claude 提供了它完成工作**以及**验证工作所需的一切。我信任这个工作流。它就是做得好。
 
-这就是它的本质。没有企业级角色扮演的废话。只是一个让 Claude Code 稳定可靠地构建酷东西的极其有效的系统。
+这就是它的本质。没有企业级角色扮演的废话。只是一个让 Qwen Code CLI 稳定可靠地构建酷东西的极其有效的系统。
 
 — **TÂCHES**
 
@@ -63,7 +63,7 @@ npx gsd-qwen@latest
 
 Vibecoding 名声不好。你描述想要什么，AI 生成代码，结果得到不一致的垃圾，规模一大就崩。
 
-GSD 解决了这个问题。它是让 Claude Code 变得可靠的上下文工程层。描述你的想法，让系统提取它需要知道的一切，然后让 Claude Code 开始工作。
+GSD 解决了这个问题。它是让 Qwen Code CLI 变得可靠的上下文工程层。描述你的想法，让系统提取它需要知道的一切，然后让 Qwen Code CLI 开始工作。
 
 ---
 
@@ -76,53 +76,36 @@ GSD 解决了这个问题。它是让 Claude Code 变得可靠的上下文工程
 ## 快速开始
 
 ```bash
-npx gsd-qwen@latest
+npx gsd-qwen@latest --global
 ```
 
-安装程序会提示你选择：
-1. **运行时** —— Claude Code、OpenCode、Gemini、Codex 或全部
-2. **位置** —— 全局（所有项目）或本地（仅当前项目）
+安装程序会提示你选择安装位置：
+1. **全局** —— 安装到 `~/.qwen/`
+2. **本地** —— 安装到 `./.qwen/`
 
 验证安装：
-- Claude Code / Gemini: `$gsd-help`
-- OpenCode: `/gsd-help`
-- Codex: `$gsd-help`
 
-> [!NOTE]
-> Codex 安装使用技能（`skills/gsd-*/SKILL.md`）而非自定义提示。
+```bash
+$gsd-help
+```
 
 ### 保持更新
 
 GSD 快速迭代。定期更新：
 
 ```bash
-npx gsd-qwen@latest
+npx gsd-qwen@latest --global
 ```
 
 <details>
 <summary><strong>非交互式安装（Docker、CI、脚本）</strong></summary>
 
 ```bash
-# Claude Code
-npx gsd-qwen --claude --global   # 安装到 ~/.qwen/
-npx gsd-qwen --claude --local    # 安装到 ./.qwen/
-
-# OpenCode（开源，免费模型）
-npx gsd-qwen --opencode --global # 安装到 ~/.config/opencode/
-
-# Gemini CLI
-npx gsd-qwen --gemini --global   # 安装到 ~/.gemini/
-
-# Codex（技能优先）
-npx gsd-qwen --codex --global    # 安装到 ~/.codex/
-npx gsd-qwen --codex --local     # 安装到 ./.codex/
-
-# 所有运行时
-npx gsd-qwen --all --global      # 安装到所有目录
+npx gsd-qwen@latest --global   # 安装到 ~/.qwen/
+npx gsd-qwen@latest --local    # 安装到 ./.qwen/
 ```
 
 使用 `--global`（`-g`）或 `--local`（`-l`）跳过位置提示。
-使用 `--claude`、`--opencode`、`--gemini`、`--codex` 或 `--all` 跳过运行时提示。
 
 </details>
 
@@ -134,7 +117,7 @@ npx gsd-qwen --all --global      # 安装到所有目录
 ```bash
 git clone https://github.com/glittercowboy/get-shit-done.git
 cd get-shit-done
-node bin/install.js --claude --local
+node bin/install.js --local
 ```
 
 安装到 `./.qwen/` 用于在贡献前测试修改。
@@ -143,11 +126,7 @@ node bin/install.js --claude --local
 
 ### 推荐：跳过权限模式
 
-GSD 设计为无摩擦自动化。运行 Claude Code 时使用：
-
-```bash
-claude --dangerously-skip-permissions
-```
+GSD 设计为无摩擦自动化。运行 Qwen Code CLI 时使用对应的无确认/自动批准模式。
 
 > [!TIP]
 > 这是 GSD 的预期使用方式 —— 停下来 50 次批准 `date` 和 `git commit` 会失去意义。
@@ -383,7 +362,7 @@ $gsd-quick
 
 ### 上下文工程
 
-Claude Code 非常强大，**如果你**给它需要的上下文。大多数人没有。
+Qwen Code CLI 非常强大，**如果你**给它需要的上下文。大多数人没有。
 
 GSD 为你处理：
 
@@ -598,9 +577,9 @@ $gsd-set-profile budget
 
 ### 保护敏感文件
 
-GSD 的代码库映射和分析命令读取文件以了解你的项目。**保护包含密钥的文件**，将它们添加到 Claude Code 的拒绝列表：
+GSD 的代码库映射和分析命令读取文件以了解你的项目。**保护包含密钥的文件**，将它们添加到 Qwen Code CLI 的拒绝列表：
 
-1. 打开 Claude Code 设置（`.qwen/settings.json` 或全局）
+1. 打开 Qwen Code CLI 设置（`.qwen/settings.json` 或全局）
 2. 将敏感文件模式添加到拒绝列表：
 
 ```json
@@ -643,9 +622,9 @@ npx gsd-qwen@latest
 
 **使用 Docker 或容器化环境？**
 
-如果用波浪号路径（`~/.qwen/...`）读取文件失败，在安装前设置 `CLAUDE_CONFIG_DIR`：
+如果用波浪号路径（`~/.qwen/...`）读取文件失败，在安装前设置 `QWEN_CONFIG_DIR`（`CLAUDE_CONFIG_DIR` 仍兼容）：
 ```bash
-CLAUDE_CONFIG_DIR=/home/youruser/.qwen npx gsd-qwen --global
+QWEN_CONFIG_DIR=/home/youruser/.qwen npx gsd-qwen --global
 ```
 这确保使用绝对路径而不是 `~`，后者在容器中可能无法正确展开。
 
@@ -655,14 +634,10 @@ CLAUDE_CONFIG_DIR=/home/youruser/.qwen npx gsd-qwen --global
 
 ```bash
 # 全局安装
-npx gsd-qwen --claude --global --uninstall
-npx gsd-qwen --opencode --global --uninstall
-npx gsd-qwen --codex --global --uninstall
+npx gsd-qwen --uninstall
 
 # 本地安装（当前项目）
-npx gsd-qwen --claude --local --uninstall
-npx gsd-qwen --opencode --local --uninstall
-npx gsd-qwen --codex --local --uninstall
+npx gsd-qwen --uninstall
 ```
 
 这删除所有 GSD 命令、代理、钩子和设置，同时保留你的其他配置。
@@ -671,7 +646,7 @@ npx gsd-qwen --codex --local --uninstall
 
 ## 社区移植
 
-OpenCode、Gemini CLI 和 Codex 现在通过 `npx gsd-qwen` 原生支持。
+Qwen Code CLI 现在通过 `npx gsd-qwen` 原生支持。
 
 这些社区移植开创了多运行时支持：
 
@@ -702,6 +677,6 @@ MIT 许可证。详见 [LICENSE](../LICENSE)。
 
 <div align="center">
 
-**Claude Code 很强大。GSD 让它可靠。**
+**Qwen Code CLI 很强大。GSD 让它可靠。**
 
 </div>

@@ -20,74 +20,15 @@ First, derive `PREFERRED_RUNTIME` from the invoking prompt's `execution_context`
 Use `PREFERRED_RUNTIME` as the first runtime checked so `$gsd-update` targets the runtime that invoked it.
 
 ```bash
-# Runtime candidates: "<runtime>:<config-dir>" stored as an array.
-# Using an array instead of a space-separated string ensures correct
-# iteration in both bash and zsh (zsh does not word-split unquoted
-# variables by default). Fixes #1173.
-RUNTIME_DIRS=( "claude:.qwen" "opencode:.config/opencode" "opencode:.opencode" "gemini:.gemini" "codex:.codex" )
+# Qwen-only install detection: local takes priority if valid and distinct from global.
+LOCAL_VERSION_FILE="./.qwen/get-shit-done/VERSION"
+GLOBAL_VERSION_FILE="$HOME/.qwen/get-shit-done/VERSION"
+LOCAL_MARKER_FILE="./.qwen/get-shit-done/workflows/update.md"
+GLOBAL_MARKER_FILE="$HOME/.qwen/get-shit-done/workflows/update.md"
 
-# PREFERRED_RUNTIME should be set from execution_context before running this block.
-# If not set, infer from runtime env vars; fallback to claude.
-if [ -z "$PREFERRED_RUNTIME" ]; then
-  if [ -n "$CODEX_HOME" ]; then
-    PREFERRED_RUNTIME="codex"
-  elif [ -n "$GEMINI_CONFIG_DIR" ]; then
-    PREFERRED_RUNTIME="gemini"
-  elif [ -n "$OPENCODE_CONFIG_DIR" ] || [ -n "$OPENCODE_CONFIG" ]; then
-    PREFERRED_RUNTIME="opencode"
-  elif [ -n "$CLAUDE_CONFIG_DIR" ]; then
-    PREFERRED_RUNTIME="claude"
-  else
-    PREFERRED_RUNTIME="claude"
-  fi
-fi
-
-# Reorder entries so preferred runtime is checked first.
-ORDERED_RUNTIME_DIRS=()
-for entry in "${RUNTIME_DIRS[@]}"; do
-  runtime="${entry%%:*}"
-  if [ "$runtime" = "$PREFERRED_RUNTIME" ]; then
-    ORDERED_RUNTIME_DIRS+=( "$entry" )
-  fi
-done
-for entry in "${RUNTIME_DIRS[@]}"; do
-  runtime="${entry%%:*}"
-  if [ "$runtime" != "$PREFERRED_RUNTIME" ]; then
-    ORDERED_RUNTIME_DIRS+=( "$entry" )
-  fi
-done
-
-# Check local first (takes priority only if valid and distinct from global)
-LOCAL_VERSION_FILE="" LOCAL_MARKER_FILE="" LOCAL_DIR="" LOCAL_RUNTIME=""
-for entry in "${ORDERED_RUNTIME_DIRS[@]}"; do
-  runtime="${entry%%:*}"
-  dir="${entry#*:}"
-  if [ -f "./$dir/get-shit-done/VERSION" ] || [ -f "./$dir/get-shit-done/workflows/update.md" ]; then
-    LOCAL_RUNTIME="$runtime"
-    LOCAL_VERSION_FILE="./$dir/get-shit-done/VERSION"
-    LOCAL_MARKER_FILE="./$dir/get-shit-done/workflows/update.md"
-    LOCAL_DIR="$(cd "./$dir" 2>/dev/null && pwd)"
-    break
-  fi
-done
-
-GLOBAL_VERSION_FILE="" GLOBAL_MARKER_FILE="" GLOBAL_DIR="" GLOBAL_RUNTIME=""
-for entry in "${ORDERED_RUNTIME_DIRS[@]}"; do
-  runtime="${entry%%:*}"
-  dir="${entry#*:}"
-  if [ -f "$HOME/$dir/get-shit-done/VERSION" ] || [ -f "$HOME/$dir/get-shit-done/workflows/update.md" ]; then
-    GLOBAL_RUNTIME="$runtime"
-    GLOBAL_VERSION_FILE="$HOME/$dir/get-shit-done/VERSION"
-    GLOBAL_MARKER_FILE="$HOME/$dir/get-shit-done/workflows/update.md"
-    GLOBAL_DIR="$(cd "$HOME/$dir" 2>/dev/null && pwd)"
-    break
-  fi
-done
-
-# Only treat as LOCAL if the resolved paths differ (prevents misdetection when CWD=$HOME)
 IS_LOCAL=false
-if [ -n "$LOCAL_VERSION_FILE" ] && [ -f "$LOCAL_VERSION_FILE" ] && [ -f "$LOCAL_MARKER_FILE" ] && grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+' "$LOCAL_VERSION_FILE"; then
-  if [ -z "$GLOBAL_DIR" ] || [ "$LOCAL_DIR" != "$GLOBAL_DIR" ]; then
+if [ -f "$LOCAL_VERSION_FILE" ] && [ -f "$LOCAL_MARKER_FILE" ] && grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+' "$LOCAL_VERSION_FILE"; then
+  if [ ! -f "$GLOBAL_VERSION_FILE" ] || [ "$(cd "./.qwen" 2>/dev/null && pwd)" != "$(cd "$HOME/.qwen" 2>/dev/null && pwd)" ]; then
     IS_LOCAL=true
   fi
 fi
@@ -95,38 +36,30 @@ fi
 if [ "$IS_LOCAL" = true ]; then
   INSTALLED_VERSION="$(cat "$LOCAL_VERSION_FILE")"
   INSTALL_SCOPE="LOCAL"
-  TARGET_RUNTIME="$LOCAL_RUNTIME"
-elif [ -n "$GLOBAL_VERSION_FILE" ] && [ -f "$GLOBAL_VERSION_FILE" ] && [ -f "$GLOBAL_MARKER_FILE" ] && grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+' "$GLOBAL_VERSION_FILE"; then
+elif [ -f "$GLOBAL_VERSION_FILE" ] && [ -f "$GLOBAL_MARKER_FILE" ] && grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+' "$GLOBAL_VERSION_FILE"; then
   INSTALLED_VERSION="$(cat "$GLOBAL_VERSION_FILE")"
   INSTALL_SCOPE="GLOBAL"
-  TARGET_RUNTIME="$GLOBAL_RUNTIME"
-elif [ -n "$LOCAL_RUNTIME" ] && [ -f "$LOCAL_MARKER_FILE" ]; then
-  # Runtime detected but VERSION missing/corrupt: treat as unknown version, keep runtime target
+elif [ -f "$LOCAL_MARKER_FILE" ]; then
   INSTALLED_VERSION="0.0.0"
   INSTALL_SCOPE="LOCAL"
-  TARGET_RUNTIME="$LOCAL_RUNTIME"
-elif [ -n "$GLOBAL_RUNTIME" ] && [ -f "$GLOBAL_MARKER_FILE" ]; then
+elif [ -f "$GLOBAL_MARKER_FILE" ]; then
   INSTALLED_VERSION="0.0.0"
   INSTALL_SCOPE="GLOBAL"
-  TARGET_RUNTIME="$GLOBAL_RUNTIME"
 else
   INSTALLED_VERSION="0.0.0"
   INSTALL_SCOPE="UNKNOWN"
-  TARGET_RUNTIME="claude"
 fi
 
 echo "$INSTALLED_VERSION"
 echo "$INSTALL_SCOPE"
-echo "$TARGET_RUNTIME"
+echo "qwen"
 ```
 
 Parse output:
 - Line 1 = installed version (`0.0.0` means unknown version)
 - Line 2 = install scope (`LOCAL`, `GLOBAL`, or `UNKNOWN`)
-- Line 3 = target runtime (`claude`, `opencode`, `gemini`, or `codex`)
-- If scope is `UNKNOWN`, proceed to install step using `--claude --global` fallback.
-
-If multiple runtime installs are detected and the invoking runtime cannot be determined from execution_context, ask the user which runtime to update before running install.
+- Line 3 = target runtime (`qwen`)
+- If scope is `UNKNOWN`, proceed to install step using `--global` fallback.
 
 **If VERSION file missing:**
 ```
@@ -220,15 +153,15 @@ Exit.
 - `get-shit-done/` will be wiped and replaced
 - `agents/gsd-*` files will be replaced
 
-(Paths are relative to detected runtime install location:
-global: `~/.qwen/`, `~/.config/opencode/`, `~/.opencode/`, `~/.gemini/`, or `~/.codex/`
-local: `./.qwen/`, `./.config/opencode/`, `./.opencode/`, `./.gemini/`, or `./.codex/`)
+(Paths are relative to the detected Qwen install location:
+global: `~/.qwen/`
+local: `./.qwen/`)
 
 Your custom files in other locations are preserved:
 - Custom commands not in `commands/gsd/` ✓
-- Custom agents not prefixed with `gsd-` ✓
+- Custom skills not prefixed with `gsd-` ✓
 - Custom hooks ✓
-- Your CLAUDE.md files ✓
+- Your personal Qwen config files ✓
 
 If you've modified any GSD files directly, they'll be automatically backed up to `gsd-local-patches/` and can be reapplied with `$gsd-reapply-patches` after the update.
 ```
@@ -243,26 +176,21 @@ Use ask_user_question:
 </step>
 
 <step name="run_update">
-Run the update using the install type detected in step 1:
-
-Build runtime flag from step 1:
-```bash
-RUNTIME_FLAG="--$TARGET_RUNTIME"
-```
+Run the update using the install scope detected in step 1:
 
 **If LOCAL install:**
 ```bash
-npx -y gsd-qwen@latest "$RUNTIME_FLAG" --local
+npx -y gsd-qwen@latest --local
 ```
 
 **If GLOBAL install:**
 ```bash
-npx -y gsd-qwen@latest "$RUNTIME_FLAG" --global
+npx -y gsd-qwen@latest --global
 ```
 
 **If UNKNOWN install:**
 ```bash
-npx -y gsd-qwen@latest --claude --global
+npx -y gsd-qwen@latest --global
 ```
 
 Capture output. If install fails, show error and exit.
@@ -270,14 +198,12 @@ Capture output. If install fails, show error and exit.
 Clear the update cache so statusline indicator disappears:
 
 ```bash
-# Clear update cache across all runtime directories
-for dir in .qwen .config/opencode .opencode .gemini .codex; do
-  rm -f "./$dir/cache/gsd-update-check.json"
-  rm -f "$HOME/$dir/cache/gsd-update-check.json"
-done
+# Clear update cache across Qwen directories
+rm -f "./.qwen/cache/gsd-update-check.json"
+rm -f "$HOME/.qwen/cache/gsd-update-check.json"
 ```
 
-The SessionStart hook (`gsd-check-update.js`) writes to the detected runtime's cache directory, so all paths must be cleared to prevent stale update indicators.
+The SessionStart hook (`gsd-check-update.js`) writes to the Qwen cache directory, so both local and global paths must be cleared to prevent stale update indicators.
 </step>
 
 <step name="display_result">

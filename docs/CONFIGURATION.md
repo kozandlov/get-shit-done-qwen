@@ -267,7 +267,8 @@ Valid override values: `opus`, `sonnet`, `haiku`, `inherit`
 
 | Variable | Purpose |
 |----------|---------|
-| `CLAUDE_CONFIG_DIR` | Override default config directory (`~/.qwen/`) |
+| `QWEN_CONFIG_DIR` | Override default config directory (`~/.qwen/`) |
+| `CLAUDE_CONFIG_DIR` | Legacy alias for `QWEN_CONFIG_DIR` |
 | `GEMINI_API_KEY` | Detected by context monitor to switch hook event name |
 | `WSL_DISTRO_NAME` | Detected by installer for WSL path handling |
 

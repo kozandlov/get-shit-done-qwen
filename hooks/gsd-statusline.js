@@ -37,7 +37,7 @@ process.stdin.on('end', () => {
       // The monitor reads this file to inject agent-facing warnings when context is low.
       if (session) {
         try {
-          const bridgePath = path.join(os.tmpdir(), `claude-ctx-${session}.json`);
+          const bridgePath = path.join(os.tmpdir(), `qwen-ctx-${session}.json`);
           const bridgeData = JSON.stringify({
             session_id: session,
             remaining_percentage: remaining,
@@ -69,9 +69,10 @@ process.stdin.on('end', () => {
     // Current task from todos
     let task = '';
     const homeDir = os.homedir();
-    // Respect CLAUDE_CONFIG_DIR for custom config directory setups (#870)
-    const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(homeDir, '.qwen');
-    const todosDir = path.join(claudeDir, 'todos');
+    // Respect QWEN_CONFIG_DIR for custom config directory setups.
+    // CLAUDE_CONFIG_DIR remains as a backward-compatible alias.
+    const qwenDir = process.env.QWEN_CONFIG_DIR || process.env.CLAUDE_CONFIG_DIR || path.join(homeDir, '.qwen');
+    const todosDir = path.join(qwenDir, 'todos');
     if (session && fs.existsSync(todosDir)) {
       try {
         const files = fs.readdirSync(todosDir)
@@ -93,7 +94,7 @@ process.stdin.on('end', () => {
 
     // GSD update available?
     let gsdUpdate = '';
-    const cacheFile = path.join(claudeDir, 'cache', 'gsd-update-check.json');
+    const cacheFile = path.join(qwenDir, 'cache', 'gsd-update-check.json');
     if (fs.existsSync(cacheFile)) {
       try {
         const cache = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));

@@ -11,11 +11,11 @@ const { spawn } = require('child_process');
 const homeDir = os.homedir();
 const cwd = process.cwd();
 
-// Detect runtime config directory (supports Claude, OpenCode, Gemini)
-// Respects CLAUDE_CONFIG_DIR for custom config directory setups
+// Detect the Qwen config directory.
+// Supports QWEN_CONFIG_DIR, with CLAUDE_CONFIG_DIR as a legacy compatibility alias.
 function detectConfigDir(baseDir) {
   // Check env override first (supports multi-account setups)
-  const envDir = process.env.CLAUDE_CONFIG_DIR;
+  const envDir = process.env.QWEN_CONFIG_DIR || process.env.CLAUDE_CONFIG_DIR;
   if (envDir && fs.existsSync(path.join(envDir, 'get-shit-done', 'VERSION'))) {
     return envDir;
   }

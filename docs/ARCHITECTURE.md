@@ -21,7 +21,7 @@
 
 ## System Overview
 
-GSD is a **meta-prompting framework** that sits between the user and AI coding agents (Claude Code, Gemini CLI, OpenCode, Codex, Copilot, Antigravity). It provides:
+GSD is a **meta-prompting framework** that sits between the user and Qwen Code CLI. It provides:
 
 1. **Context engineering** — Structured artifacts that give the AI everything it needs per task
 2. **Multi-agent orchestration** — Thin orchestrators that spawn specialized agents with fresh context windows
@@ -37,7 +37,7 @@ GSD is a **meta-prompting framework** that sits between the user and AI coding a
 ┌─────────────────────▼────────────────────────────────┐
 │              COMMAND LAYER                            │
 │   commands/gsd/*.md — Prompt-based command files      │
-│   (Claude Code custom commands / Codex skills)        │
+│   (Qwen skills generated from upstream commands)      │
 └─────────────────────┬────────────────────────────────┘
                       │
 ┌─────────────────────▼────────────────────────────────┐
@@ -107,11 +107,7 @@ Multiple layers prevent common failure modes:
 ### Commands (`commands/gsd/*.md`)
 
 User-facing entry points. Each file contains YAML frontmatter (name, description, allowed-tools) and a prompt body that bootstraps the workflow. Commands are installed as:
-- **Claude Code:** Custom slash commands (`$gsd-command-name`)
-- **OpenCode:** Slash commands (`/gsd-command-name`)
-- **Codex:** Skills (`$gsd-command-name`)
-- **Copilot:** Slash commands (`$gsd-command-name`)
-- **Antigravity:** Skills
+Commands are installed as Qwen skills (`skills/gsd-*/SKILL.md`).
 
 **Total commands:** 37
 
@@ -338,7 +334,7 @@ UI-SPEC.md (per phase) ───────────────────
 ### Installation Files
 
 ```
-~/.qwen/                          # Claude Code (global install)
+~/.qwen/                          # Qwen Code CLI (global install)
 ├── commands/gsd/*.md               # 37 slash commands
 ├── get-shit-done/
 │   ├── bin/gsd-tools.cjs           # CLI utility
@@ -355,12 +351,7 @@ UI-SPEC.md (per phase) ───────────────────
 └── VERSION                         # Installed version number
 ```
 
-Equivalent paths for other runtimes:
-- **OpenCode:** `~/.config/opencode/` or `~/.opencode/`
-- **Gemini CLI:** `~/.gemini/`
-- **Codex:** `~/.codex/` (uses skills instead of commands)
-- **Copilot:** `~/.github/`
-- **Antigravity:** `~/.gemini/antigravity/` (global) or `./.agent/` (local)
+Local install path: `./.qwen/`
 
 ### Project Files (`.planning/`)
 
@@ -418,27 +409,18 @@ Equivalent paths for other runtimes:
 
 The installer (`bin/install.js`, ~3,000 lines) handles:
 
-1. **Runtime detection** — Interactive prompt or CLI flags (`--claude`, `--opencode`, `--gemini`, `--codex`, `--copilot`, `--antigravity`, `--all`)
-2. **Location selection** — Global (`--global`) or local (`--local`)
-3. **File deployment** — Copies commands, workflows, references, templates, agents, hooks
-4. **Runtime adaptation** — Transforms file content per runtime:
-   - Claude Code: Uses as-is
-   - OpenCode: Converts agent frontmatter to `name:`, `model: inherit`, `mode: subagent`
-   - Codex: Generates TOML config + skills from commands
-   - Copilot: Maps tool names (read_file→read, run_shell_command→execute, etc.)
-   - Gemini: Adjusts hook event names (`AfterTool` instead of `PostToolUse`)
-   - Antigravity: Skills-first with Google model equivalents
-5. **Path normalization** — Replaces `~/.qwen/` paths with runtime-specific paths
-6. **Settings integration** — Registers hooks in runtime's `settings.json`
-7. **Patch backup** — Since v1.17, backs up locally modified files to `gsd-local-patches/` for `$gsd-reapply-patches`
-8. **Manifest tracking** — Writes `gsd-file-manifest.json` for clean uninstall
-9. **Uninstall mode** — `--uninstall` removes all GSD files, hooks, and settings
+1. **Install mode** — Interactive prompt or CLI flags (`--global`, `--local`, `--uninstall`, `--config-dir`)
+2. **Location selection** — Global (`~/.qwen/`) or local (`./.qwen/`)
+3. **File deployment** — Copies `commands/gsd/*.md` into `skills/gsd-*/SKILL.md`
+4. **Patch backup** — Backs up locally modified files to `gsd-local-patches/` for `$gsd-reapply-patches`
+5. **Manifest tracking** — Writes `gsd-file-manifest.json` for clean uninstall
+6. **Uninstall mode** — `--uninstall` removes GSD-managed skills and metadata only
 
 ### Platform Handling
 
 - **Windows:** `windowsHide` on child processes, EPERM/EACCES protection on protected directories, path separator normalization
 - **WSL:** Detects Windows Node.js running on WSL and warns about path mismatches
-- **Docker/CI:** Supports `CLAUDE_CONFIG_DIR` env var for custom config directory locations
+- **Docker/CI:** Supports `QWEN_CONFIG_DIR` env var for custom config directory locations (`CLAUDE_CONFIG_DIR` remains a legacy alias)
 
 ---
 
@@ -447,14 +429,14 @@ The installer (`bin/install.js`, ~3,000 lines) handles:
 ### Architecture
 
 ```
-Runtime Engine (Claude Code / Gemini CLI)
+Runtime Engine (Qwen Code CLI)
     │
     ├── statusLine event ──► gsd-statusline.js
     │   Reads: stdin (session JSON)
-    │   Writes: stdout (formatted status), /tmp/claude-ctx-{session}.json (bridge)
+    │   Writes: stdout (formatted status), /tmp/qwen-ctx-{session}.json (bridge)
     │
-    ├── PostToolUse/AfterTool event ──► gsd-context-monitor.js
-    │   Reads: stdin (tool event JSON), /tmp/claude-ctx-{session}.json (bridge)
+    ├── PostToolUse event ──► gsd-context-monitor.js
+    │   Reads: stdin (tool event JSON), /tmp/qwen-ctx-{session}.json (bridge)
     │   Writes: stdout (hookSpecificOutput with additionalContext warning)
     │
     └── SessionStart event ──► gsd-check-update.js
@@ -484,23 +466,18 @@ Debounce: 5 tool uses between repeated warnings. Severity escalation (WARNING→
 
 ## Runtime Abstraction
 
-GSD supports 6 AI coding runtimes through a unified command/workflow architecture:
+GSD supports Qwen Code CLI through a unified command/workflow architecture:
 
 | Runtime | Command Format | Agent System | Config Location |
 |---------|---------------|--------------|-----------------|
-| Claude Code | `$gsd-command` | task spawning | `~/.qwen/` |
-| OpenCode | `/gsd-command` | Subagent mode | `~/.config/opencode/` |
-| Gemini CLI | `$gsd-command` | task spawning | `~/.gemini/` |
-| Codex | `$gsd-command` | Skills | `~/.codex/` |
-| Copilot | `$gsd-command` | Agent delegation | `~/.github/` |
-| Antigravity | Skills | Skills | `~/.gemini/antigravity/` |
+| Qwen Code CLI | `$gsd-command` | Skills | `~/.qwen/` |
 
 ### Abstraction Points
 
-1. **Tool name mapping** — Each runtime has its own tool names (e.g., Claude's `run_shell_command` → Copilot's `execute`)
-2. **Hook event names** — Claude uses `PostToolUse`, Gemini uses `AfterTool`
-3. **Agent frontmatter** — Each runtime has its own agent definition format
-4. **Path conventions** — Each runtime stores config in different directories
-5. **Model references** — `inherit` profile lets GSD defer to runtime's model selection
+1. **Tool name mapping** — Upstream content is normalized into Qwen-friendly command and skill names
+2. **Hook event names** — The hook system uses Qwen settings and cache locations
+3. **Agent frontmatter** — Upstream commands are transformed into `SKILL.md`
+4. **Path conventions** — Config lives under `~/.qwen/` or `./.qwen/`
+5. **Model references** — Qwen-specific defaults are loaded from repo docs and workflows
 
-The installer handles all translation at install time. Workflows and agents are written in Claude Code's native format and transformed during deployment.
+The installer handles all translation at install time. Upstream workflows and commands are transformed into the Qwen install surface during deployment.

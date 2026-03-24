@@ -283,7 +283,7 @@ function uninstall(mode, options = {}) {
 }
 
 function showHelp() {
-  console.log(`Usage: node bin/install.js [options]
+  console.log(`Usage: gsd-qwen [options]
 
 Options:
   -g, --global              Install to ~/.qwen
@@ -293,10 +293,11 @@ Options:
   -h, --help                Show this help message
 
 Examples:
-  node bin/install.js --global
-  node bin/install.js --local
-  node bin/install.js --global --config-dir ~/.qwen-custom
-  node bin/install.js --local --uninstall
+  gsd-qwen --global
+  gsd-qwen --local
+  gsd-qwen --global --config-dir ~/.qwen-custom
+  gsd-qwen --local --uninstall
+  npx gsd-qwen@latest --global
 `);
 }
 
