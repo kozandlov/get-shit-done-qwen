@@ -6,6 +6,273 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.33.0] - 2026-04-05
+
+### Added
+- **Shared behavioral references** — Add questioning, domain-probes, and UI-brand reference docs wired into workflows (#1658)
+- **Chore / Maintenance issue template** — Structured template for internal maintenance tasks (#1689)
+- **Typed contribution templates** — Separate Bug, Enhancement, and Feature issue/PR templates with approval gates (#1673)
+- **MODEL_ALIAS_MAP regression test** — Ensures model aliases stay current (#1698)
+
+### Changed
+- **CONFIG_DEFAULTS constant** — Deduplicate config defaults into single source of truth in core.cjs (#1708)
+- **Test standardization** — All tests migrated to `node:assert/strict` and `t.after()` cleanup per CONTRIBUTING.md (#1675)
+- **CI matrix** — Drop Windows runner, add static hardcoded-path detection (#1676)
+
+### Fixed
+- **Kilo path replacement** — `copyFlattenedCommands` now applies path replacement for Kilo runtime (#1710)
+- **Prompt guard injection pattern** — Add missing 'act as' pattern to hook (#1697)
+- **Frontmatter inline array parser** — Respect quoted commas in array values (REG-04) (#1695)
+- **Cross-platform planning lock** — Replace shell `sleep` with `Atomics.wait` for Windows compatibility (#1693)
+- **MODEL_ALIAS_MAP** — Update to current Claude model IDs: opus→claude-opus-4-6, sonnet→claude-sonnet-4-6, haiku→claude-haiku-4-5 (#1691)
+- **Skill path replacement** — `copyCommandsAsClaudeSkills` now applies path replacement correctly (#1677)
+- **Runtime detection for /gsd-review** — Environment-based detection instead of hardcoded paths (#1463)
+- **Marketing text in runtime prompt** — Remove marketing taglines from runtime selection (#1672, #1655)
+- **Discord invite link** — Update from vanity URL to permanent invite link (#1648)
+
+### Documentation
+- **COMMANDS.md** — Add /gsd-secure-phase and /gsd-docs-update (#1706)
+- **AGENTS.md** — Add 3 missing agents, fix stale counts (#1703)
+- **ARCHITECTURE.md** — Update component counts and missing entries (#1701)
+- **Localized documentation** — Full v1.32.0 audit for all language READMEs
+
+## [1.32.0] - 2026-04-04
+
+### Added
+- **Trae runtime support** — Install GSD for Trae IDE via `--trae` flag (#1566)
+- **Kilo CLI runtime support** — Full Kilo runtime integration with skill conversion and config management
+- **Augment Code runtime support** — Full Augment runtime with skill conversion
+- **Cline runtime support** — Install GSD for Cline via `.clinerules` (#1605)
+- **`state validate` command** — Detects drift between STATE.md and filesystem reality (#1627)
+- **`state sync` command** — Reconstructs STATE.md from actual project state with `--verify` dry-run (#1627)
+- **`state planned-phase` command** — Records state transition after plan-phase completes (#1627)
+- **`--to N` flag for autonomous mode** — Stop execution after completing a specific phase (#1644)
+- **`--power` flag for discuss-phase** — File-based bulk question answering (#1513)
+- **`--interactive` flag for autonomous** — Lean context with user input
+- **`--diagnose` flag for debug** — Diagnosis-only mode without fix attempts (#1396)
+- **`/gsd-analyze-dependencies` command** — Detect phase dependencies (#1607)
+- **Anti-pattern severity levels** — Mandatory understanding checks at resume (#1491)
+- **Methodology artifact type** — Consumption mechanisms for methodology documents (#1488)
+- **Planner reachability check** — Validates plan steps are achievable (#1606)
+- **Playwright-MCP automated UI verification** — Optional visual verification in verify-phase (#1604)
+- **Pause-work expansion** — Supports non-phase contexts with richer handoffs (#1608)
+- **Research gate** — Blocks planning when RESEARCH.md has unresolved open questions (#1618)
+- **Context reduction** — Markdown truncation and cache-friendly prompt ordering for SDK (#1615)
+- **Verifier milestone scope filtering** — Gaps addressed in later phases marked as deferred, not gaps (#1624)
+- **read_file-before-edit guard hook** — Advisory PreToolUse hook prevents infinite retry loops in non-Claude runtimes (#1628)
+- **Response language config** — `response_language` setting for cross-phase language consistency (#1412)
+- **Manual update procedure** — `docs/manual-update.md` for non-npm installs
+- **Commit-docs hook** — Guard for `commit_docs` enforcement (#1395)
+- **Community hooks opt-in** — Optional hooks for GSD projects
+- **OpenCode reviewer** — Added as peer reviewer in `/gsd-review`
+- **Multi-project workspace** — `GSD_PROJECT` env var support
+- **Manager passthrough flags** — Per-step flag configuration via config (#1410)
+- **Adaptive context enrichment** — For 1M-token models
+- **Test quality audit step** — Added to verify-phase workflow
+
+### Changed
+- **Modular planner decomposition** — `gsd-planner.md` split into reference files to stay under 50K char limit (#1612)
+- **Sequential worktree dispatch** — Replaced timing-based stagger with sequential `task()` + `run_in_background` (#1541)
+- **Skill format migration** — All user-facing suggestions updated from `$gsd-xxx` to `/gsd-xxx` (#1579)
+
+### Fixed
+- **Phase resolution prefix collision** — `find-phase` now uses exact token matching; `1009` no longer matches `1009A` (#1635)
+- **Roadmap backlog phase lookup** — `roadmap get-phase` falls back to full ROADMAP.md for phases outside current milestone (#1634)
+- **Performance Metrics in `phase complete`** — Now updates Velocity and By Phase table on phase completion (#1627)
+- **Ghost `state update-position` command** — Removed dead reference from execute-phase.md (#1627)
+- **Semver comparison for update check** — Proper `isNewer()` comparison replaces `!==`; no longer flags newer-than-npm as update available (#1617)
+- **Next Up block ordering** — `/clear` shown before command (#1631)
+- **Chain flag preservation** — Preserved across discuss → plan → execute (#1633)
+- **Config key validation** — Unrecognized keys in config.json now warn instead of silent drop (#1542)
+- **Parallel worktree STATE.md overwrites** — Orchestrator owns STATE.md/ROADMAP.md writes (#1599)
+- **Dependent plan wave ordering** — Detects `files_modified` overlap and enforces wave ordering (#1587)
+- **Windows session path hash** — Uses `realpathSync.native` (#1593)
+- **STATE.md progress counters** — Corrected during plan execution (#1597)
+- **Workspace agent path resolution** — Correct in worktree context (#1512)
+- **Milestone phase cleanup** — Clears phases directory on new milestone (#1588)
+- **Workstreams allowed-tools** — Removed unnecessary write_file permission (#1637)
+- **Executor/planner MCP tools** — Instructed to use available MCP tools (#1603)
+- **Bold plan checkboxes** — Fixed in ROADMAP.md
+- **Backlog recommendations** — Fixed BACKLOG phase handling
+- **Session ID path traversal** — Validated `planningDir`
+- **Copilot executor task descriptions** — Added required `description` param
+- **OpenCode permission string guard** — Fixed string-valued permission config
+- **Concurrency safety** — Atomic state writes
+- **Health validation** — STATE/ROADMAP cross-validation
+- **Workstream session routing** — Isolated per session with fallback
+
+## [1.31.0] - 2026-04-01
+
+### Added
+- **Claude Code 2.1.88+ skills migration** — Commands now install as `skills/gsd-*/SKILL.md` instead of deprecated `commands/gsd/`. Auto-cleans legacy directory on install
+- **`$gsd-docs-update` command** — Verified documentation generation with doc-writer and doc-verifier agents
+- **`--chain` flag for discuss-phase** — Interactive discuss that auto-chains into plan+execute
+- **`--only N` flag for autonomous** — Execute a single phase instead of all remaining
+- **Schema drift detection** — Prevents false-positive verification when ORM schema files change without migration
+- **`$gsd-secure-phase` command** — Security enforcement layer with threat-model-anchored verification
+- **Claim provenance tagging** — Researcher marks claims with source evidence
+- **Scope reduction detection** — Planner blocked from silently dropping requirements
+- **`workflow.use_worktrees` config** — Toggle to disable worktree isolation
+- **`project_code` config** — Prefix phase directories with project code
+- **Project skills discovery** — CLAUDE.md generation now includes project-specific skills section
+- **CodeRabbit integration** — Added to cross-AI review workflow
+- **GSD SDK enhancements** — Auto `--init` flag, headless prompts, prompt sanitizer
+
+### Changed
+- **`$gsd-quick --full` flag** — Now enables all phases (discussion + research + plan-checking + verification). New `--validate` flag covers previous `--full` behavior (plan-checking + verification only)
+
+### Fixed
+- **Gemini CLI agent loading** — Removed `permissionMode` that broke agent frontmatter parsing
+- **Phase count display** — Clarified misleading N/T banner in autonomous mode
+- **Workstream `set` command** — Now requires name arg, added `--clear` flag
+- **Infinite self-discuss loop** — Fixed in auto/headless mode with `max_discuss_passes` config
+- **Orphan worktree cleanup** — Post-execution cleanup added
+- **JSONC settings.json** — Comments no longer cause data loss
+- **Incremental checkpoint saves** — Discuss answers preserved on interrupt
+- **Stats accuracy** — Verification required for Complete status, added Executed state
+- **Three-way merge for reapply-patches** — Never-skip invariant for backed-up files
+- **SDK verify gates advance** — Skip advance when verification finds gaps
+- **Manager delegates to Skill pipeline** — Instead of raw task prompts
+- **ROADMAP.md Plans column** — cmdPhaseComplete now updates correctly
+- **Decimal phase numbers** — Commit regex captures decimal phases
+- **Codex path replacement** — Added .qwen path replacement
+- **Verifier loads all ROADMAP SCs** — Regardless of PLAN must_haves
+- **Verifier human_needed status** — Enforced when human verification items exist
+- **Hooks shared cache dir** — Correct stale hooks path
+- **Plan file naming** — Convention enforced in gsd-planner agent
+- **Copilot path replacement** — Fixed ~/.qwen to ~/.github
+- **Windsurf trailing slash** — Removed from .windsurf/rules path
+- **Slug sanitization** — Added --raw flag, capped length to 60 chars
+
+## [1.30.0] - 2026-03-26
+
+### Added
+- **GSD SDK** — Headless TypeScript SDK (`@gsd-build/sdk`) with `gsd-sdk init` and `gsd-sdk auto` CLI commands for autonomous project execution
+- **`--sdk` installer flag** — Optionally install the GSD SDK during setup (interactive prompt or `--sdk` flag)
+
+## [1.29.0] - 2026-03-25
+
+### Added
+- **Windsurf runtime support** — Full installation and command conversion for Windsurf (Codeium)
+- **Agent skill injection** — Inject project-specific skills into subagents via `agent_skills` config section
+- **UI-phase and UI-review steps** in autonomous workflow
+- **Security scanning CI** — Prompt injection, base64, and secret scanning workflows
+- **Portuguese (pt-BR) documentation**
+- **Korean (ko-KR) documentation**
+- **Japanese (ja-JP) documentation**
+
+### Changed
+- Repository references updated from `glittercowboy` to `gsd-build`
+- Korean translations refined from formal -십시오 to natural -세요 style
+
+### Fixed
+- Frontmatter `must_haves` parser handles any YAML indentation width
+- `findProjectRoot` returns startDir when it already contains `.planning/`
+- Agent workflows include `<available_agent_types>` for named agent spawning
+- Begin-phase preserves Status/LastActivity/Progress in Current Position
+- Missing GSD agents detected with warning when `subagent_type` falls back to general-purpose
+- Codex re-install repairs trapped non-boolean keys under `[features]`
+- Invalid `\Z` regex anchor replaced and redundant pattern removed
+- Hook field validation prevents silent `settings.json` rejection
+- Codex preserves top-level config keys and uses absolute agent paths (≥0.116)
+- Windows shell robustness, `project_root` detection, and hook stdin safety
+- Brownfield project detection expanded to Android, Kotlin, Gradle, and 15+ ecosystems
+- Verify-work checkpoint rendering hardened
+- Worktree agents get `permissionMode: acceptEdits`
+- Security scan self-detection and Windows test compatibility
+
+## [1.28.0] - 2026-03-22
+
+### Added
+- **Workstream namespacing** — Parallel milestone work via `$gsd-workstreams`
+- **Multi-project workspace commands** — Manage multiple GSD projects from a single root
+- **`$gsd-forensics` command** — Post-mortem workflow investigation
+- **`$gsd-milestone-summary` command** — Post-build onboarding for completed milestones
+- **`workflow.skip_discuss` setting** — Bypass discuss-phase in autonomous mode
+- **`workflow.discuss_mode` assumptions config** — Control discuss-phase behavior
+- **UI-phase recommendation** — Automatically surfaced for UI-heavy phases
+- **CLAUDE.md compliance** — Added as plan-checker Dimension 10
+- **Data-flow tracing, environment audit, and behavioral spot-checks** in verification
+- **Multi-runtime selection** in interactive installer
+- **Text mode support** for plan-phase workflow
+- **"Follow the Indirection" debugging technique** in gsd-debugger
+- **`--reviews` flag** for `gsd:plan-phase`
+- **Temp file reaper** — Prevents unbounded /tmp accumulation
+
+### Changed
+- Test matrix optimized from 9 containers down to 4
+- Copilot skill/agent counts computed dynamically from source dirs
+- Wave-specific execution support in execute-phase
+
+### Fixed
+- Windows 8.3 short path failures in worktree tests
+- Worktree isolation enforced for code-writing agents
+- Linked worktrees respect `.planning/` before resolving to main repo
+- Path traversal prevention via workstream name sanitization
+- Strategy branch created before first commit (not at execute-phase)
+- `ProviderModelNotFoundError` on non-Claude runtimes
+- `$HOME` used instead of `~` in installed shell command paths
+- Subdirectory CWD preserved in monorepo worktrees
+- Stale hook detection checking wrong directory path
+- STATE.md frontmatter status preserved when body Status field missing
+- Pipe truncation fix using `fs.writeSync` for stdout
+- Verification gate before writing PROJECT.md in new-milestone
+- Removed `jq` as undocumented hard dependency
+- Discuss-phase no longer ignores workflow instructions
+- Gemini CLI uses `BeforeTool` hook event instead of `PreToolUse`
+
+## [1.27.0] - 2026-03-20
+
+### Added
+- **Advisor mode** — Research-backed discussion with parallel agents evaluating gray areas before you decide
+- **Multi-repo workspace support** — Auto-detection and project root resolution for monorepos and multi-repo setups
+- **Cursor CLI runtime support** — Full installation and command conversion for Cursor
+- **`$gsd-fast` command** — Trivial inline tasks that skip planning entirely
+- **`$gsd-review` command** — Cross-AI peer review of current phase or branch
+- **`$gsd-plant-seed` command** — Backlog parking lot for ideas and persistent context threads
+- **`$gsd-pr-branch` command** — Clean PR branches filtering `.planning/` commits
+- **`$gsd-audit-uat` command** — Verification debt tracking across phases
+- **`--analyze` flag for discuss-phase** — Trade-off analysis during discussion
+- **`research_before_questions` config option** — Run research before discussion questions instead of after
+- **Ticket-based phase identifiers** — Support for team workflows using ticket IDs
+- **Worktree-aware `.planning/` resolution** — File locking for safe parallel access
+- **Discussion audit trail** — Auto-generated `DISCUSSION-LOG.md` during discuss-phase
+- **Context window size awareness** — Optimized behavior for 1M+ context models
+- **Exa and Firecrawl MCP support** — Additional research tools for research agents
+- **Runtime State Inventory** — Researcher capability for rename/refactor phases
+- **Quick-task branch support** — Isolated branches for quick-mode tasks
+- **Decision IDs** — Discuss-to-plan traceability via decision identifiers
+- **Stub detection** — Verifier and executor detect incomplete implementations
+- **Security hardening** — Centralized `security.cjs` module with path traversal prevention, prompt injection detection/sanitization, safe JSON parsing, field name validation, and shell argument validation. PreToolUse `gsd-prompt-guard` hook scans writes to `.planning/` for injection patterns
+
+### Changed
+- CI matrix updated to Node 20, 22, 24 — dropped EOL Node 18
+- GitHub Actions upgraded for Node 24 compatibility
+- Consolidated `planningPaths()` helper across 4 modules — eliminated 34 inline path constructions
+- Deduplicated code, annotated empty catches, consolidated STATE.md field helpers
+- Materialize full config on new-project initialization
+- Workflow enforcement guidance embedded in generated CLAUDE.md
+
+### Fixed
+- Path traversal in `readTextArgOrFile` — arguments validate paths resolve within project directory
+- Codex config.toml corruption from non-boolean `[features]` keys
+- Stale hooks check filtered to gsd-prefixed files only
+- Universal agent name replacement for non-Claude runtimes
+- `--no-verify` support for parallel executor commits
+- ROADMAP fallback for plan-phase, execute-phase, and verify-work
+- Copilot sequential fallback and spot-check completion detection
+- `text_mode` config for Claude Code remote session compatibility
+- Cursor: preserve slash-prefixed commands and unquoted skill names
+- Semver 3+ segment parsing and CRLF frontmatter corruption recovery
+- STATE.md parsing fixes (compound Plan field, progress tables, lifecycle extraction)
+- Windows HOME sandboxing for tests
+- Hook manifest tracking for local patch detection
+- Cross-platform code detection and STATE.md file locking
+- Auto-detect `commit_docs` from gitignore in `loadConfig`
+- Context monitor hook matcher and timeout
+- Codex EOL preservation when enabling hooks
+- macOS `/var` symlink resolution in path validation
+
 ## [1.26.0] - 2026-03-18
 
 ### Added
@@ -1573,7 +1840,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - YOLO mode for autonomous execution
 - Interactive mode with checkpoints
 
-[Unreleased]: https://github.com/glittercowboy/get-shit-done/compare/v1.26.0...HEAD
+[Unreleased]: https://github.com/gsd-build/get-shit-done/compare/v1.30.0...HEAD
+[1.30.0]: https://github.com/gsd-build/get-shit-done/releases/tag/v1.30.0
+[1.29.0]: https://github.com/gsd-build/get-shit-done/releases/tag/v1.29.0
+[1.28.0]: https://github.com/gsd-build/get-shit-done/releases/tag/v1.28.0
+[1.27.0]: https://github.com/glittercowboy/get-shit-done/releases/tag/v1.27.0
 [1.26.0]: https://github.com/glittercowboy/get-shit-done/releases/tag/v1.26.0
 [1.25.0]: https://github.com/glittercowboy/get-shit-done/releases/tag/v1.25.0
 [1.24.0]: https://github.com/glittercowboy/get-shit-done/releases/tag/v1.24.0

@@ -1,42 +1,52 @@
 {
   "name": "gsd-qwen",
-  "version": "1.0.0",
-  "description": "Get Shit Done for Qwen Code CLI — система мета-промптинга и спеко-ориентированной разработки",
-  "main": "bin/install.js",
+  "version": "1.33.0",
+  "description": "A meta-prompting, context engineering and spec-driven development system for Qwen Code CLI, OpenCode, Gemini and Codex by TÂCHES.",
   "bin": {
-    "gsd-qwen": "./bin/install.js"
+    "gsd-qwen": "bin/install.js"
   },
-  "scripts": {
-    "transform": "node scripts/transform-to-qwen.js",
-    "test": "node scripts/run-tests.cjs || echo 'No tests configured'",
-    "validate": "node --check scripts/transform-to-qwen.js",
-    "install:global": "node bin/install.js --global",
-    "install:local": "node bin/install.js --local",
-    "uninstall": "node bin/install.js --uninstall"
-  },
+  "files": [
+    "bin",
+    "commands",
+    "get-shit-done",
+    "agents",
+    "hooks/dist",
+    "scripts"
+  ],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "meta-prompting",
+    "context-engineering",
+    "spec-driven-development",
+    "gemini",
+    "gemini-cli",
+    "codex",
+    "codex-cli"
+  ],
+  "author": "TÂCHES",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YOUR_USERNAME/gsd-qwen.git"
+    "url": "git+https://github.com/gsd-build/get-shit-done.git"
   },
-  "keywords": [
-    "qwen",
-    "qwen-code",
-    "cli",
-    "gsd",
-    "get-shit-done",
-    "productivity",
-    "ai",
-    "skills"
-  ],
-  "author": "",
-  "license": "MIT",
+  "homepage": "https://github.com/gsd-build/get-shit-done",
   "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/gsd-qwen/issues"
+    "url": "https://github.com/gsd-build/get-shit-done/issues"
   },
-  "homepage": "https://github.com/YOUR_USERNAME/gsd-qwen#readme",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
-  "devDependencies": {},
-  "dependencies": {}
+  "devDependencies": {
+    "c8": "^11.0.0",
+    "esbuild": "^0.24.0",
+    "vitest": "^4.1.2"
+  },
+  "scripts": {
+    "build:hooks": "node scripts/build-hooks.js",
+    "prepublishOnly": "npm run build:hooks",
+    "test": "node scripts/run-tests.cjs",
+    "test:coverage": "c8 --check-coverage --lines 70 --reporter text --include 'get-shit-done/bin/lib/*.cjs' --exclude 'tests/**' --all node scripts/run-tests.cjs"
+  }
 }

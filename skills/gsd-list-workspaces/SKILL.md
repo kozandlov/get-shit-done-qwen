@@ -1,0 +1,38 @@
+---
+name: gsd-list-workspaces
+description: List active GSD workspaces and their status
+allowed-tools:
+  - run_shell_command
+  - read_file
+---
+<objective>
+Scan `~/gsd-workspaces/` for workspace directories containing `WORKSPACE.md` manifests. Display a summary table with name, path, repo count, strategy, and GSD project status.
+</objective>
+
+<execution_context>
+@~/.qwen/get-shit-done/workflows/list-workspaces.md
+@~/.qwen/get-shit-done/references/ui-brand.md
+</execution_context>
+
+<process>
+Execute the list-workspaces workflow from @~/.qwen/get-shit-done/workflows/list-workspaces.md end-to-end.
+</process>
+
+
+---
+
+## Qwen Code CLI
+
+**Installation:**
+```bash
+# Global
+ln -s ~/.qwen/get-shit-done/skills/gsd-list-workspaces ~/.qwen/skills/gsd-list-workspaces
+
+# Local (project)
+ln -s .qwen/get-shit-done/skills/gsd-list-workspaces .qwen/skills/gsd-list-workspaces
+```
+
+**Usage:**
+```bash
+$gsd-list-workspaces
+```

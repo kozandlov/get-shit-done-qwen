@@ -6,6 +6,11 @@ Each agent has fresh context, explores a specific focus area, and **writes docum
 Output: .planning/codebase/ folder with 7 structured documents about the codebase state.
 </purpose>
 
+<available_agent_types>
+Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+- gsd-codebase-mapper — Maps project structure and dependencies
+</available_agent_types>
+
 <philosophy>
 **Why dedicated mapper agents:**
 - Fresh context per domain (no token contamination)
@@ -28,9 +33,10 @@ Load codebase mapping context:
 ```bash
 INIT=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" init map-codebase)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+AGENT_SKILLS_MAPPER=$(node "$HOME/.qwen/get-shit-done/bin/gsd-tools.cjs" agent-skills gsd-codebase-mapper 2>/dev/null)
 ```
 
-Extract from init JSON: `mapper_model`, `commit_docs`, `codebase_dir`, `existing_maps`, `has_maps`, `codebase_dir_exists`.
+Extract from init JSON: `mapper_model`, `commit_docs`, `codebase_dir`, `existing_maps`, `has_maps`, `codebase_dir_exists`, `subagent_timeout`.
 </step>
 
 <step name="check_existing">
@@ -85,10 +91,7 @@ Continue to spawn_agents.
 <step name="detect_runtime_capabilities">
 Before spawning agents, detect whether the current runtime supports the `task` tool for subagent delegation.
 
-**Runtimes with task tool:** Claude Code, Cursor (native subagent support)
-**Runtimes WITHOUT task tool:** Antigravity, Gemini CLI, OpenCode, Codex, and others
-
-**How to detect:** Check if you have access to a `task` tool. If you do NOT have a `task` tool (or only have tools like `browser_subagent` which is for web browsing, NOT code analysis):
+**How to detect:** Check if you have access to a `task` tool (may be capitalized as `task` or lowercase as `task` depending on runtime). If you do NOT have a `task`/`task` tool (or only have tools like `browser_subagent` which is for web browsing, NOT code analysis):
 
 → **Skip `spawn_agents` and `collect_confirmations`** — go directly to `sequential_mapping` instead.
 
@@ -118,7 +121,8 @@ write_file these documents to .planning/codebase/:
 - STACK.md - Languages, runtime, frameworks, dependencies, configuration
 - INTEGRATIONS.md - External APIs, databases, auth providers, webhooks
 
-Explore thoroughly. write_file documents directly using templates. Return confirmation only."
+Explore thoroughly. write_file documents directly using templates. Return confirmation only.
+${AGENT_SKILLS_MAPPER}"
 )
 ```
 
@@ -138,7 +142,8 @@ write_file these documents to .planning/codebase/:
 - ARCHITECTURE.md - Pattern, layers, data flow, abstractions, entry points
 - STRUCTURE.md - Directory layout, key locations, naming conventions
 
-Explore thoroughly. write_file documents directly using templates. Return confirmation only."
+Explore thoroughly. write_file documents directly using templates. Return confirmation only.
+${AGENT_SKILLS_MAPPER}"
 )
 ```
 
@@ -158,7 +163,8 @@ write_file these documents to .planning/codebase/:
 - CONVENTIONS.md - Code style, naming, patterns, error handling
 - TESTING.md - Framework, structure, mocking, coverage
 
-Explore thoroughly. write_file documents directly using templates. Return confirmation only."
+Explore thoroughly. write_file documents directly using templates. Return confirmation only.
+${AGENT_SKILLS_MAPPER}"
 )
 ```
 
@@ -177,7 +183,8 @@ Analyze this codebase for technical debt, known issues, and areas of concern.
 write_file this document to .planning/codebase/:
 - CONCERNS.md - Tech debt, bugs, security, performance, fragile areas
 
-Explore thoroughly. write_file document directly using template. Return confirmation only."
+Explore thoroughly. write_file document directly using template. Return confirmation only.
+${AGENT_SKILLS_MAPPER}"
 )
 ```
 
@@ -192,8 +199,10 @@ Wait for all 4 agents to complete using TaskOutput tool.
 TaskOutput tool:
   task_id: "{task_id from Agent result}"
   block: true
-  timeout: 300000
+  timeout: {subagent_timeout from init context, default 300000}
 ```
+
+> The timeout is configurable via `workflow.subagent_timeout` in `.planning/config.json` (milliseconds). Default: 300000 (5 minutes). Increase for large codebases or slower models.
 
 Call TaskOutput for all 4 agents in parallel (single message with 4 TaskOutput calls).
 
@@ -340,14 +349,14 @@ Created .planning/codebase/:
 
 **Initialize project** — use codebase context for planning
 
-`$gsd-new-project`
+`/clear` then:
 
-<sub>`/clear` first → fresh context window</sub>
+`/gsd-new-project`
 
 ---
 
 **Also available:**
-- Re-run mapping: `$gsd-map-codebase`
+- Re-run mapping: `/gsd-map-codebase`
 - Review specific file: `cat .planning/codebase/STACK.md`
 - edit any document before proceeding
 

@@ -39,17 +39,37 @@ Model profiles control which Claude model each GSD agent uses. This allows balan
 
 **inherit** - Follow the current session model
 - All agents resolve to `inherit`
-- Best when you switch models interactively (for example OpenCode `/model`)
+- Best when you switch models interactively (for example OpenCode or Kilo `/model`)
 - **Required when using non-Anthropic providers** (OpenRouter, local models, etc.) — otherwise GSD may call Anthropic models directly, incurring unexpected costs
 - Use when: you want GSD to follow your currently selected runtime model
 
-## Using Non-Anthropic Models (OpenRouter, Local, etc.)
+## Using Non-Claude Runtimes (Codex, OpenCode, Gemini CLI, Kilo)
+
+When installed for a non-Claude runtime, the GSD installer sets `resolve_model_ids: "omit"` in `~/.gsd/defaults.json`. This returns an empty model parameter for all agents, so each agent uses the runtime's default model. No manual setup is needed.
+
+To assign different models to different agents, add `model_overrides` with model IDs your runtime recognizes:
+
+```json
+{
+  "resolve_model_ids": "omit",
+  "model_overrides": {
+    "gsd-planner": "o3",
+    "gsd-executor": "o4-mini",
+    "gsd-debugger": "o3",
+    "gsd-codebase-mapper": "o4-mini"
+  }
+}
+```
+
+The same tiering logic applies: stronger models for planning and debugging, cheaper models for execution and mapping.
+
+## Using Claude Code with Non-Anthropic Providers (OpenRouter, Local)
 
 If you're using Claude Code with OpenRouter, a local model, or any non-Anthropic provider, set the `inherit` profile to prevent GSD from calling Anthropic models for subagents:
 
 ```bash
 # Via settings command
-$gsd-settings
+/gsd-settings
 # → Select "Inherit" for model profile
 
 # Or manually in .planning/config.json
@@ -85,11 +105,11 @@ Override specific agents without changing the entire profile:
 }
 ```
 
-Overrides take precedence over the profile. Valid values: `opus`, `sonnet`, `haiku`, `inherit`.
+Overrides take precedence over the profile. Valid values: `opus`, `sonnet`, `haiku`, `inherit`, or any fully-qualified model ID (e.g., `"o3"`, `"openai/o3"`, `"google/gemini-2.5-pro"`).
 
 ## Switching Profiles
 
-Runtime: `$gsd-set-profile <profile>`
+Runtime: `/gsd-set-profile <profile>`
 
 Per-project default: Set in `.planning/config.json`:
 ```json
