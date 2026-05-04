@@ -1,6 +1,6 @@
 # Context Window Monitor
 
-A post-tool hook for Qwen Code CLI that warns the agent when context window usage is high.
+A post-tool hook (`PostToolUse` for Claude Code, `AfterTool` for Gemini CLI) that warns the agent when context window usage is high.
 
 ## Problem
 
@@ -8,7 +8,7 @@ The statusline shows context usage to the **user**, but the **agent** has no awa
 
 ## How It Works
 
-1. The statusline hook writes context metrics to `/tmp/qwen-ctx-{session_id}.json`
+1. The statusline hook writes context metrics to `/tmp/claude-ctx-{session_id}.json`
 2. After each tool use, the context monitor reads these metrics
 3. When remaining context drops below thresholds, it injects a warning as `additionalContext`
 4. The agent receives the warning in its conversation and can act accordingly
@@ -19,7 +19,7 @@ The statusline shows context usage to the **user**, but the **agent** has no awa
 |-------|-----------|----------------|
 | Normal | > 35% | No warning |
 | WARNING | <= 35% | Wrap up current task, avoid starting new complex work |
-| CRITICAL | <= 25% | Stop immediately, save state (`$gsd-pause-work`) |
+| CRITICAL | <= 25% | Stop immediately, save state (`/gsd-pause-work`) |
 
 ## Debounce
 
@@ -34,10 +34,10 @@ To avoid spamming the agent with repeated warnings:
 Statusline Hook (gsd-statusline.js)
     | writes
     v
-/tmp/qwen-ctx-{session_id}.json
+/tmp/claude-ctx-{session_id}.json
     ^ reads
     |
-Context Monitor (gsd-context-monitor.js, PostToolUse)
+Context Monitor (gsd-context-monitor.js, PostToolUse/AfterTool)
     | injects
     v
 additionalContext -> Agent sees warning
@@ -56,16 +56,16 @@ The bridge file is a simple JSON object:
 
 ## Integration with GSD
 
-GSD's `$gsd-pause-work` command saves execution state. The WARNING message suggests using it. The CRITICAL message instructs immediate state save.
+GSD's `/gsd-pause-work` command saves execution state. The WARNING message suggests using it. The CRITICAL message instructs immediate state save.
 
 ## Setup
 
-Both hooks are automatically registered during `npx gsd-qwen@latest --global` installation:
+Both hooks are automatically registered during `npx gsd-qwen` installation:
 
 - **Statusline** (writes bridge file): Registered as `statusLine` in settings.json
 - **Context Monitor** (reads bridge file): Registered as `PostToolUse` hook in settings.json (`AfterTool` for Gemini)
 
-Manual registration in `~/.qwen/settings.json`:
+Manual registration in `~/.qwen/settings.json` (Claude Code):
 
 ```json
 {
@@ -80,6 +80,25 @@ Manual registration in `~/.qwen/settings.json`:
           {
             "type": "command",
             "command": "node ~/.qwen/hooks/gsd-context-monitor.js"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+For Gemini CLI (`~/.gemini/settings.json`), use `AfterTool` instead of `PostToolUse`:
+
+```json
+{
+  "hooks": {
+    "AfterTool": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.gemini/hooks/gsd-context-monitor.js"
           }
         ]
       }

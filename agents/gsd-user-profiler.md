@@ -38,7 +38,7 @@ Key characteristics of the input:
 </input>
 
 <reference>
-@get-shit-done/references/user-profiling.md
+@~/.qwen/get-shit-done/references/user-profiling.md
 
 This is the detection heuristics rubric. read_file it in full before analyzing any messages. It defines:
 - The 8 dimensions and their rating spectrums
@@ -52,7 +52,7 @@ This is the detection heuristics rubric. read_file it in full before analyzing a
 <process>
 
 <step name="load_rubric">
-read_file the user-profiling reference document at `get-shit-done/references/user-profiling.md` to load:
+read_file the user-profiling reference document at `~/.qwen/get-shit-done/references/user-profiling.md` to load:
 - All 8 dimension definitions with rating spectrums
 - Signal patterns and detection heuristics per dimension
 - Confidence scoring thresholds (HIGH: 10+ signals across 2+ projects, MEDIUM: 5-9, LOW: <5, UNSCORED: 0)
